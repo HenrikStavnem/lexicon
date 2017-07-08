@@ -1,0 +1,26 @@
+.newWord.col_left {
+	width: 80%;
+	height: 100px;
+	background-color: #ccc;
+	float: left;
+	
+	padding-bottom: 100px;
+}
+.newWord.col_right {
+	width: 20%;
+	height: 100px;
+	background-color: #0f0;
+	float: right;
+}
+
+.newWord.similarLexemeCols {
+	min-height: 100px;
+	width: 100%;
+	background-color: #ddd;
+}
+.newWord.similarLexemeCol {
+	display: inline;
+	min-height: 100px;
+	width: 30%;
+	background-color: #fff;
+}
