@@ -1,25 +1,6 @@
-h1 {
-	font-family: 'Roboto Slab', serif;
-}
-p {
-	font-family: 'Roboto Slab', serif;
-	font-size: 10pt;
-	padding-left: 10px;
-	margin-top: 0px;
-	margin-bottom: 0px;
-}
-	p:first-letter {
-	margin-left: -10px;
-}
-div {
-	margin-left: 15px
-	-webkit-column-count: 5; /* Chrome, Safari, Opera */
-	-moz-column-count: 5; /* Firefox */
-	column-count: 5;
-}
-.lexeme {
-	font-weight: 700;
-}
-.class {
-	font-style: italic;
-}
+h1 {	font-family: 'Roboto Slab', serif;}
+p {	font-family: 'Roboto Slab', serif;	font-size: 10pt;	padding-left: 10px;	margin-top: 0px;	margin-bottom: 0px;}
+p:first-letter {	margin-left: -10px;}
+div {	margin-left: 15px	-webkit-column-count: 5; /* Chrome, Safari, Opera */	-moz-column-count: 5; /* Firefox */	column-count: 5;}
+.lexeme {	font-weight: 700;}
+.class {	font-style: italic;}.cool {	}
