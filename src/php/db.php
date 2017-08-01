@@ -4,7 +4,9 @@
 
 	$call 	= $_POST['call'];
 
-	$mysqli = new mysqli("localhost", 'root', '', 'lexicon');
+	include("db-config.php");
+
+	$mysqli = new mysqli($GLOBALS["db_server"], $GLOBALS["db_user"], $GLOBALS["db_password"], $GLOBALS["db_name"]);
 
     if (mysqli_connect_errno()) {
 		 echo "<br />";
