@@ -1,4 +1,6 @@
-var connection = 'src/php/db.php';
+var 	connection = 'src/php/db.php',
+		useAbbreviations = false;
+	;
 
 function init(call) {
 	//setContent("<h1>Initializing...</h1>");
@@ -10,6 +12,17 @@ function init(call) {
 		case "lex_ce"	: populateWordlistCantade(); break;
 		case "newword"	: initNewWord(); break;
 	}
+
+	$( ".input-check-listen" ).on( 'change', function() {
+		console.log("Checked");
+
+		if (useAbbreviations)
+			useAbbreviations = false;
+		else
+			useAbbreviations = true;
+
+		populateWordlistEnglish();
+	});
 }
 
 function initNewWord() {
@@ -43,9 +56,10 @@ function abbreviateLexemeClass(lexClass) {
 	var result = "";
 
 	switch (lexClass) {
-		case "noun": result = "n."; break;
-		case "verb": result = "v."; break;
-		case "adjective": result = "adj."; break;
+		case "noun": 		result = "n."; 	break;
+		case "verb": 		result = "v."; 	break;
+		case "adjective": result = "adj."; 	break;
+		case "number": 	result = "num."; 	break;
 		// TODO: many many more
 		default: result = lexClass;
 	}
@@ -55,7 +69,17 @@ function abbreviateLexemeClass(lexClass) {
 
 function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 	var 	result = "<p>"
-			lexemeClass = abbreviateLexemeClass(lexClass); // TODO: Only if setting is set to abbreviate
+			lexemeClass = lexClass; // TODO: Only if setting is set to abbreviate
+
+	if (useAbbreviations) {
+		lexemeClass = abbreviateLexemeClass(lexClass)
+	}
+
+	//ipa = replaceAll("noget med : som er smart", ":", "&#x2D0;");
+	ipa = replaceAll("noget med : som er smart", ":", "cool");
+	console.log(ipa);
+
+	// &#x2D0;
 
 	result = 	result + "<span class='lexeme'>" + lexeme + "</span>";
 	result = 	result + " <span class='class " + lexClass + "'>" + lexemeClass + "</span> ";
@@ -68,7 +92,7 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 			result = 	result + "<span class='definition'>" + definitions[i].lexeme + "</span> ";
 
 			if (definitions[i].ipa != "") {
-				result = 	result + "<span class='ipa'>[" + definitions[i].ipa + "]</span>";
+				result = 	result + "<span class='ipa'>[" + replaceAll(definitions[i].ipa, ":", "&#x2D0;") + "]</span>";
 			}
 
 			if (definitions[i].usage != "") {
@@ -89,7 +113,7 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 	else {
 		result = 	result + "<span class='definition'>" + definitions[0].lexeme + "</span> ";
 		if (definitions[0].ipa != "") {
-			result = 	result + "<span class='ipa'>[" + definitions[0].ipa + "]</span>";
+			result = 	result + "<span class='ipa'>[" + replaceAll(definitions[0].ipa, ":", "&#x2D0;") + "]</span>";
 		}
 
 		if (definitions[0].usage != "") {
@@ -111,6 +135,7 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 }
 
 function populateWordlistEnglish() {
+	console.log("populateWordlistEnglish");
 	setContent("<h1>Fetching data...</h1>");
 	$.post( connection, {
 		call: "getWordlistEnglishSorted"
@@ -326,4 +351,12 @@ function createEntry(isCantade, lexeme, lexemeCount, lexClass, definition, irreg
 	}
 	result = 	result + "</p>";
 	return result;
+}
+
+function replaceAll(str, find, replace) {
+    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+
+function escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }

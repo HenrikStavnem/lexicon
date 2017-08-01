@@ -15,5 +15,5 @@ body {	color: #ff0000;	background-color: #333333;}
 .class.preposition {	color: #007DC3;}
 .definition {	color: #AACA75;}
 .irregular {	color: #FFFFFF;	font-weight: 700;}
-.ipa {	color: #FFFFFF;	/*color: #9875AA;*/	font-family: 'Cardo', serif;}
+.ipa {	color: #FFFFFF;	/*color: #9875AA;*/	font-family: 'Noto Sans', sans-serif;}
 .usage {	color: #FFFFFF;}.etymology {	color: #AAAAAA;}
