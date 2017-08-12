@@ -55,12 +55,22 @@ function test() {
 function abbreviateLexemeClass(lexClass) {
 	var result = "";
 
+	// see https://eucbeniki.sio.si/ang1/3199/index1.html
+
 	switch (lexClass) {
-		case "noun": 		result = "n."; 	break;
-		case "verb": 		result = "v."; 	break;
-		case "adjective": result = "adj."; 	break;
-		case "number": 	result = "num."; 	break;
-		// TODO: many many more
+		case "noun": 			result = "n."; 		break;
+		case "verb": 			result = "v."; 		break;
+		case "adjective": 	result = "adj."; 		break;
+		case "number": 		result = "num."; 		break;
+		case "adverb": 		result = "adv."; 		break;
+		case "preposition": 	result = "prep."; 	break;
+		case "pronoun": 		result = "pron."; 	break;
+		case "conjunction": 	result = "conj."; 	break;
+		case "interjection": result = "interj."; 	break;
+		case "determiner": 	result = "det."; 		break;
+		case "particle": 		result = "part."; 	break;
+		case "article": 		result = "art."; 		break;
+		// TODO: proper noun
 		default: result = lexClass;
 	}
 
@@ -134,6 +144,10 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 	return result;
 }
 
+function createLexiconHeadline(conlang, conlangPrefix, conlangSuffix, targetLang) {
+	$("#lexicon-headline").html("<h1>" + capitalizeString(targetLang) + " &mdash; " + conlangPrefix + capitalizeString(conlang) + conlangSuffix + "</h1>");
+}
+
 function populateWordlistEnglish() {
 	console.log("populateWordlistEnglish");
 	setContent("<h1>Fetching data...</h1>");
@@ -142,6 +156,7 @@ function populateWordlistEnglish() {
 	} )
     .done(
 		function( data ) {
+			console.log(data);
 			var html = "";
 			var currentLetter = "";
 			var previousLexeme = "";
@@ -157,6 +172,12 @@ function populateWordlistEnglish() {
 					return;
 				}
 			}
+
+			console.log(entries.conlang);
+			createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
+
+			// Create headline
+
 
 			for (var i in entries.lexemes) {
 				wordcount++;
@@ -359,4 +380,9 @@ function replaceAll(str, find, replace) {
 
 function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+function capitalizeString(string)
+{
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }

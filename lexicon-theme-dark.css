@@ -7,7 +7,7 @@ p:first-letter {	margin-left: -10px;}
 body {	color: #ff0000;	background-color: #333333;}
 .lexeme {	color: #CF8B43;	font-weight: 700;}.label {	letter-spacing: 2px;	font-size: 8pt;	line-height: 12pt;	text-transform: uppercase;	color: #888888;}
 .number-label {	color: #009e2f;}
-.class {	font-style: italic;	color: #9875AA;}
+.class {	font-style: italic;	color: #9875AA;	padding-left: 5px;	padding-right: 5px;}
 .class.noun {	color: #E35F48;	}
 .class.verb {	color: #FBE74C;	}
 .class.adjective {	color: #77A2C4;	}
@@ -16,4 +16,5 @@ body {	color: #ff0000;	background-color: #333333;}
 .definition {	color: #AACA75;}
 .irregular {	color: #FFFFFF;	font-weight: 700;}
 .ipa {	color: #FFFFFF;	/*color: #9875AA;*/	font-family: 'Noto Sans', sans-serif;}
-.usage {	color: #FFFFFF;}.etymology {	color: #AAAAAA;}
+.usage {	color: #FFFFFF;}
+.etymology {	color: #AAAAAA;}

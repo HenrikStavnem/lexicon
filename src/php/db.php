@@ -38,12 +38,42 @@
 		);
 
 	function getWordlistEnglishSorted($mysqli) {
+		$conlangName = "CONLANG";
+		$conlangPrefix = "Pre";
+		$conlangSuffix = "Suf";
+
+		$stmtConlang = $mysqli->prepare("
+			SELECT
+				lang_id, lang_prefix, lang_name, lang_suffix, lang_target_lang, lang_internal_name
+			FROM
+				lexicon_langs
+			LIMIT
+				1
+		");
+
+		/*
+		WHERE
+			lang_internal_name = 'proto-cantade'
+			*/
+
+		$stmtConlang->execute();
+		$stmtConlang->store_result();
+		$stmtConlang->bind_result($id, $prefix, $conlang, $suffix, $targetLang, $internalName);
+
+		while($row = $stmtConlang->fetch()) {
+			$conlangName 	= $conlang;
+			$conlangPrefix = $prefix;
+			$conlangSuffix = $suffix;
+			$targetLang		= $targetLang;
+			$table 			= $internalName;
+		}
+
 		$stmt = $mysqli->prepare("
 			SELECT
 				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
 				etymology, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new
 			FROM
-				cantade
+				$table
 			ORDER BY
 				definition, word ASC
 		");
@@ -118,7 +148,10 @@
 
 		// Create JSON
 		$result = array(
-				"conlang" => "Cantade",
+				"conlang" => $conlangName,
+				"conlangPrefix" => $conlangPrefix,
+				"conlangSuffix" => $conlangSuffix,
+				"targetLang" => $targetLang,
 				"lexemes" => $lexemes
 			);
 
