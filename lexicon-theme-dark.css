@@ -17,4 +17,4 @@ body {	color: #ff0000;	background-color: #333333;}
 .irregular {	color: #FFFFFF;	font-weight: 700;}
 .ipa {	color: #FFFFFF;	/*color: #9875AA;*/	font-family: 'Noto Sans', sans-serif;}
 .usage {	color: #FFFFFF;}
-.etymology {	color: #AAAAAA;}
+.etymology, .langPrefix, .langSuffix {	color: #AAAAAA;}

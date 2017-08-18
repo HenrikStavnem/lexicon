@@ -1,11 +1,11 @@
-var 	connection = 'src/php/db.php',
-		useAbbreviations = false;
+var 	connection = "src/php/db.php",
+		session = "src/php/session.php",
+		useAbbreviations = false,
+		selectedLang = null
 	;
 
 function init(call) {
-	//setContent("<h1>Initializing...</h1>");
 
-	//populateWordlistCantade();
 	switch(call) {
 		case "lex_test": test(); break;
 		case "lex_ec"	: populateWordlistEnglish(); break;
@@ -13,7 +13,7 @@ function init(call) {
 		case "newword"	: initNewWord(); break;
 	}
 
-	$( ".input-check-listen" ).on( 'change', function() {
+	$( ".input-check-listen" ).on( "change", function() {
 		console.log("Checked");
 
 		if (useAbbreviations)
@@ -23,6 +23,48 @@ function init(call) {
 
 		populateWordlistEnglish();
 	});
+
+	populateLexiconSelector();
+}
+
+function setSelectedLanguage(val) {
+	console.log("setSelectedLanguage");
+	$.post( session, {
+		call: "setSelectedLanguage",
+		newLang: $( "#select-language" ).val()
+	} )
+	.done(
+		function( data ) {
+			console.log("Session says: " + data);
+		}
+	);
+}
+
+function populateLexiconSelector() {
+	var optionsHtml = "";
+	$.post( connection, {
+		call: "getLexiconList"
+	} )
+	.done(
+		function( data ) {
+			console.log("populateLexiconSelector: " + data);
+
+			var lexiconList = JSON.parse(data);
+
+			for (var i in lexiconList) {
+				optionsHtml = optionsHtml + "<option value='" + lexiconList[i].internalName +"'>" + lexiconList[i].namePrefix + lexiconList[i].lexiconName + lexiconList[i].nameSuffix + "</option>";
+			}
+
+			$( "#lexicon-selector" ).html("<select id='select-language'>" + optionsHtml + "</select>");
+
+			$( "#select-language" ).on( "change", function() {
+				var val = $( "#select-language" ).val();
+				setSelectedLanguage(val);
+
+				populateWordlistEnglish();
+			});
+		}
+	);
 }
 
 function initNewWord() {
@@ -30,7 +72,7 @@ function initNewWord() {
 	console.info("TODO initNewWord");
 
 	// Input listeners
-	$( ".input-listen" ).on( 'input', function() {
+	$( ".input-listen" ).on( "input", function() {
 		notify() ;
 	});
 }
@@ -87,7 +129,7 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 
 	//ipa = replaceAll("noget med : som er smart", ":", "&#x2D0;");
 	ipa = replaceAll("noget med : som er smart", ":", "cool");
-	console.log(ipa);
+	//console.log(ipa);
 
 	// &#x2D0;
 
@@ -145,12 +187,13 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 }
 
 function createLexiconHeadline(conlang, conlangPrefix, conlangSuffix, targetLang) {
-	$("#lexicon-headline").html("<h1>" + capitalizeString(targetLang) + " &mdash; " + conlangPrefix + capitalizeString(conlang) + conlangSuffix + "</h1>");
+	$("#lexicon-headline").html("<h1>" + capitalizeString(targetLang) + " &mdash; <span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + conlangSuffix + "</h1>");
 }
 
 function populateWordlistEnglish() {
 	console.log("populateWordlistEnglish");
 	setContent("<h1>Fetching data...</h1>");
+
 	$.post( connection, {
 		call: "getWordlistEnglishSorted"
 	} )

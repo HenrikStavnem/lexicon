@@ -19,6 +19,7 @@
 	switch($call) {
 		case "getWordlistCantadeSorted"		:	getWordlistCantadeSorted($mysqli);	break;
 		case "getWordlistEnglishSorted"		:	getWordlistEnglishSorted($mysqli);	break;
+		case "getLexiconList"					:	getLexiconList($mysqli); 				break;
 	}
 
 	// TEST OVERRIDE
@@ -38,24 +39,31 @@
 		);
 
 	function getWordlistEnglishSorted($mysqli) {
+		/*
 		$conlangName = "CONLANG";
 		$conlangPrefix = "Pre";
 		$conlangSuffix = "Suf";
+		*/
+
+		if (isset($_SESSION["selectedLang"])) {
+			$selectedLanguage = $_SESSION["selectedLang"];
+		}
+		else {
+			$selectedLanguage = "cantade"; // TODO: Change this to first language
+		}
 
 		$stmtConlang = $mysqli->prepare("
 			SELECT
 				lang_id, lang_prefix, lang_name, lang_suffix, lang_target_lang, lang_internal_name
 			FROM
 				lexicon_langs
+			WHERE
+				lang_internal_name = ?
 			LIMIT
 				1
 		");
 
-		/*
-		WHERE
-			lang_internal_name = 'proto-cantade'
-			*/
-
+		$stmtConlang->bind_param('s', $selectedLanguage);
 		$stmtConlang->execute();
 		$stmtConlang->store_result();
 		$stmtConlang->bind_result($id, $prefix, $conlang, $suffix, $targetLang, $internalName);
@@ -159,8 +167,35 @@
 	}
 
 	function custom_sort($a,$b) {
-          return $a['lexeme']>$b['lexeme'];
-     }
+		return $a['lexeme']>$b['lexeme'];
+	}
+
+	function getLexiconList($mysqli) {
+		$lexiconList = array();
+
+		$stmt = $mysqli->prepare("
+	 	  SELECT
+	 		  lang_prefix, lang_name, lang_suffix, lang_target_lang, lang_internal_name
+	 	  FROM
+	 		  lexicon_langs
+	   ");
+
+	   $stmt->execute();
+	   $stmt->store_result();
+	   $stmt->bind_result($prefix, $lexiconName, $suffix, $targetLang, $internalName);
+
+	   while($row = $stmt->fetch()) {
+			$lexiconList[] = array(
+				"lexiconName" 	=> $lexiconName,
+				"namePrefix"	=> $prefix,
+				"nameSuffix"	=> $suffix,
+				"targetLang"	=>	$targetLang,
+				"internalName"	=> $internalName
+			);
+	 	}
+
+		echo json_encode($lexiconList);
+	}
 
 	function getWordlistCantadeSorted($mysqli) {
 
