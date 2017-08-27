@@ -20,6 +20,7 @@
 		case "getWordlistCantadeSorted"		:	getWordlistCantadeSorted($mysqli);	break;
 		case "getWordlistEnglishSorted"		:	getWordlistEnglishSorted($mysqli);	break;
 		case "getLexiconList"					:	getLexiconList($mysqli); 				break;
+		case "getWordlistForeignSorted"		:	getWordlistForeignSorted($mysqli);	break;
 	}
 
 	// TEST OVERRIDE
@@ -102,6 +103,12 @@
 				// Check if identical definition is already found
 				$key = array_search($definition, array_column($lexemes, 'lexeme'));
 
+				if ($irregular == 1) {
+					$irregular = true;
+				} else {
+					$irregular = false;
+				}
+
 				// If key is not found, create new entry
 				if ($key === false) {
 					$lexemes[] = array(
@@ -113,7 +120,8 @@
 								"ipa" 					=> $pronounciation,
 								"usage" 					=> $usage,
 								"example" 				=> "",
-								"etymology"				=> $etymology
+								"etymology"				=> $etymology,
+								"irregular"				=> $irregular
 							)
 						)
 					);
@@ -127,7 +135,8 @@
 									"ipa" 				=> $pronounciation,
 									"usage" 				=> $usage,
 									"example" 			=> "",
-									"etymology"			=> $etymology
+									"etymology"			=> $etymology,
+									"irregular"			=> $irregular
 								)
 						);
 					}
@@ -142,7 +151,8 @@
 									"ipa" 					=> $pronounciation,
 									"usage" 					=> $usage,
 									"example" 				=> "",
-									"etymology"				=> $etymology
+									"etymology"				=> $etymology,
+									"irregular"				=> $irregular
 								)
 							)
 						);
@@ -165,6 +175,8 @@
 
 		echo json_encode($result, JSON_FORCE_OBJECT);
 	}
+
+
 
 	function custom_sort($a,$b) {
 		return $a['lexeme']>$b['lexeme'];
@@ -326,4 +338,241 @@
 	function method1($a,$b) {
 		return ($a[2]["lexemes"]["lexeme"] <= $b[2]["lexemes"]["lexeme"]) ? -1 : 1;
 	}
+
+	function getWordlistForeignSortedBACKUP($mysqli) {
+		/*
+		$conlangName = "CONLANG";
+		$conlangPrefix = "Pre";
+		$conlangSuffix = "Suf";
+		*/
+
+		if (isset($_SESSION["selectedLang"])) {
+			$selectedLanguage = $_SESSION["selectedLang"];
+		}
+		else {
+			$selectedLanguage = "cantade"; // TODO: Change this to first language
+		}
+
+		$stmtConlang = $mysqli->prepare("
+			SELECT
+				lang_id, lang_prefix, lang_name, lang_suffix, lang_target_lang, lang_internal_name
+			FROM
+				lexicon_langs
+			WHERE
+				lang_internal_name = ?
+			LIMIT
+				1
+		");
+
+		$stmtConlang->bind_param('s', $selectedLanguage);
+		$stmtConlang->execute();
+		$stmtConlang->store_result();
+		$stmtConlang->bind_result($id, $prefix, $conlang, $suffix, $targetLang, $internalName);
+
+		while($row = $stmtConlang->fetch()) {
+			$conlangName 	= $conlang;
+			$conlangPrefix = $prefix;
+			$conlangSuffix = $suffix;
+			$targetLang		= $targetLang;
+			$table 			= $internalName;
+		}
+
+		$stmt = $mysqli->prepare("
+			SELECT
+				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
+				etymology, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new
+			FROM
+				$table
+			ORDER BY
+				word, definition ASC
+		");
+
+		$stmt->execute();
+		$stmt->store_result();
+		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $verbConjugation, $pronounSubclass, $usage, $note, $new);
+
+		$result = array();
+		$lexemes = array();
+
+		while($row = $stmt->fetch()) {
+			/*	Splitting up definitions
+			**	Definitions can be appear as "word1, word2, word2" in the database
+			*/
+			$definitionsArray = explode(",", $definitionAsIs);
+			foreach($definitionsArray as $definition) {
+				// Check if identical definition is already found
+				$key = array_search($lex, array_column($lexemes, 'definition'));
+
+				if ($irregular == 1) {
+					$irregular = true;
+				} else {
+					$irregular = false;
+				}
+
+				// If key is not found, create new entry
+				if ($key === false) {
+					$lexemes[] = array(
+						"lexeme" 				=> trim($lex),
+						"lexClass" 				=> $class,
+						"definitions"			=> array(
+							"0"						=> array(
+								"lexeme" 				=> $definition,
+								"ipa" 					=> $pronounciation,
+								"usage" 					=> $usage,
+								"example" 				=> "",
+								"etymology"				=> $etymology,
+								"irregular"				=> $irregular
+							)
+						)
+					);
+				}
+				else {
+					// Push to array
+					if ($lexemes[$key]["lexClass"] == $class) {
+						array_push($lexemes[$key]["definitions"],
+							array(
+									"lexeme" 			=> $definition,
+									"ipa" 				=> $pronounciation,
+									"usage" 				=> $usage,
+									"example" 			=> "",
+									"etymology"			=> $etymology,
+									"irregular"			=> $irregular
+								)
+						);
+					}
+					else {
+						// New entry
+						$lexemes[] = array(
+							"lexeme" 				=> trim($lex),
+							"lexClass" 				=> $class,
+							"definitions"			=> array(
+								"0"						=> array(
+									"lexeme" 				=> $definition,
+									"ipa" 					=> $pronounciation,
+									"usage" 					=> $usage,
+									"example" 				=> "",
+									"etymology"				=> $etymology,
+									"irregular"				=> $irregular
+								)
+							)
+						);
+					}
+				}
+			}
+		}
+
+		// Sort the multidimensional array
+	  $lexemes = array_orderby($lexemes, 'lexeme', SORT_ASC, 'lexClass', SORT_ASC);
+
+		// Create JSON
+		$result = array(
+				"conlang" => $conlangName,
+				"conlangPrefix" => $conlangPrefix,
+				"conlangSuffix" => $conlangSuffix,
+				"targetLang" => $targetLang,
+				"lexemes" => $lexemes
+			);
+
+		echo json_encode($result, JSON_FORCE_OBJECT);
+	}
+
+
+
+// ##########################################################################
+
+
+
+	function getWordlistForeignSorted($mysqli) {
+		/*
+		$conlangName = "CONLANG";
+		$conlangPrefix = "Pre";
+		$conlangSuffix = "Suf";
+		*/
+
+		if (isset($_SESSION["selectedLang"])) {
+			$selectedLanguage = $_SESSION["selectedLang"];
+		}
+		else {
+			$selectedLanguage = "cantade"; // TODO: Change this to first language
+		}
+
+		$stmtConlang = $mysqli->prepare("
+			SELECT
+				lang_id, lang_prefix, lang_name, lang_suffix, lang_target_lang, lang_internal_name
+			FROM
+				lexicon_langs
+			WHERE
+				lang_internal_name = ?
+			LIMIT
+				1
+		");
+
+		$stmtConlang->bind_param('s', $selectedLanguage);
+		$stmtConlang->execute();
+		$stmtConlang->store_result();
+		$stmtConlang->bind_result($id, $prefix, $conlang, $suffix, $targetLang, $internalName);
+
+		while($row = $stmtConlang->fetch()) {
+			$conlangName 	= $conlang;
+			$conlangPrefix = $prefix;
+			$conlangSuffix = $suffix;
+			$targetLang		= $targetLang;
+			$table 			= $internalName;
+		}
+
+		$stmt = $mysqli->prepare("
+			SELECT
+				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
+				etymology, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new
+			FROM
+				$table
+			ORDER BY
+				word, definition ASC
+		");
+
+		$stmt->execute();
+		$stmt->store_result();
+		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $verbConjugation, $pronounSubclass, $usage, $note, $new);
+
+		$result = array();
+		$lexemes = array();
+
+		while($row = $stmt->fetch()) {
+			/*	Splitting up definitions
+			**	Definitions can be appear as "word1, word2, word2" in the database
+			*/
+			$definitionsArray = explode(",", $definitionAsIs);
+
+			$lexemes[] = array(
+				"lexeme" 				=> trim($lex),
+				"lexClass" 				=> $class,
+				"definitions"			=> array(
+					"0"						=> array(
+						"lexeme" 				=> $definitionAsIs,
+						"ipa" 					=> $pronounciation,
+						"usage" 					=> $usage,
+						"example" 				=> "",
+						"etymology"				=> $etymology,
+						"irregular"				=> $irregular
+					)
+				)
+			);
+		}
+
+		// Sort the multidimensional array
+	  $lexemes = array_orderby($lexemes, 'lexeme', SORT_ASC, 'lexClass', SORT_ASC);
+
+		// Create JSON
+		$result = array(
+				"conlang" => $conlangName,
+				"conlangPrefix" => $conlangPrefix,
+				"conlangSuffix" => $conlangSuffix,
+				"targetLang" => $targetLang,
+				"lexemes" => $lexemes
+			);
+
+		echo json_encode($result, JSON_FORCE_OBJECT);
+	}
+
+
 ?>

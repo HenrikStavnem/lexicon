@@ -1,30 +1,55 @@
 var 	connection = "src/php/db.php",
 		session = "src/php/session.php",
 		useAbbreviations = false,
-		selectedLang = null
+		selectedLang = null,
+		lexiconDirection = "local"
 	;
 
 function init(call) {
 
 	switch(call) {
 		case "lex_test": test(); break;
-		case "lex_ec"	: populateWordlistEnglish(); break;
-		case "lex_ce"	: populateWordlistCantade(); break;
+		case "lex_ec"	: populateWordListLocal(); break;
+		case "lex_ce"	: populateWordListForeign(); break;
 		case "newword"	: initNewWord(); break;
 	}
 
 	$( ".input-check-listen" ).on( "change", function() {
-		console.log("Checked");
 
 		if (useAbbreviations)
 			useAbbreviations = false;
 		else
 			useAbbreviations = true;
 
-		populateWordlistEnglish();
+		populateWordListLocal();
 	});
 
+	$( "#lexicon-direction-button" ).on( "click", function() {
+		changeLexiconDirection();
+	});
+
+
 	populateLexiconSelector();
+}
+
+function changeLexiconDirection() {
+	if (lexiconDirection == "local") {
+		lexiconDirection = "foreign";
+	} else {
+		lexiconDirection = "local";
+	}
+
+	populateWordlist();
+
+	console.log("Target changed to : " + lexiconDirection);
+}
+
+function populateWordlist() {
+	if (lexiconDirection == "local") {
+		populateWordListLocal();
+	} else {
+		populateWordlistForeign();
+	}
 }
 
 function setSelectedLanguage(val) {
@@ -61,7 +86,7 @@ function populateLexiconSelector() {
 				var val = $( "#select-language" ).val();
 				setSelectedLanguage(val);
 
-				populateWordlistEnglish();
+				populateWordlist();
 			});
 		}
 	);
@@ -141,7 +166,13 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 		for (var i in definitions) {
 			var number = (parseInt(i) + 1);
 			result = 	result + "<br /><span class='label'> " + number + ":</span> ";
-			result = 	result + "<span class='definition'>" + definitions[i].lexeme + "</span> ";
+			result = 	result + "<span class='definition'>" + definitions[i].lexeme + "</span>";
+
+			if (definitions[i].irregular) {
+				result = 	result + "* ";
+			} else {
+				result = 	result + " ";
+			}
 
 			if (definitions[i].ipa != "") {
 				result = 	result + "<span class='ipa'>[" + replaceAll(definitions[i].ipa, ":", "&#x2D0;") + "]</span>";
@@ -158,12 +189,19 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 
 			if (definitions[i].etymology != "") {
 				result = 	result + "<br><span class='label'>Etymology:</span>";
-				result = 	result + "<span class='etymology'>[" + definitions[i].etymology + "]</span>";
+				result = 	result + "<span class='etymology'>" + definitions[i].etymology + "</span>";
 			}
 		}
 	}
 	else {
-		result = 	result + "<span class='definition'>" + definitions[0].lexeme + "</span> ";
+		result = 	result + "<span class='definition'>" + definitions[0].lexeme + "</span>";
+
+		if (definitions[0].irregular) {
+			result = 	result + "* ";
+		} else {
+			result = 	result + " ";
+		}
+
 		if (definitions[0].ipa != "") {
 			result = 	result + "<span class='ipa'>[" + replaceAll(definitions[0].ipa, ":", "&#x2D0;") + "]</span>";
 		}
@@ -190,8 +228,8 @@ function createLexiconHeadline(conlang, conlangPrefix, conlangSuffix, targetLang
 	$("#lexicon-headline").html("<h1>" + capitalizeString(targetLang) + " &mdash; <span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + conlangSuffix + "</h1>");
 }
 
-function populateWordlistEnglish() {
-	console.log("populateWordlistEnglish");
+function populateWordListLocal() {
+	//console.log("populateWordListLocal");
 	setContent("<h1>Fetching data...</h1>");
 
 	$.post( connection, {
@@ -234,11 +272,12 @@ function populateWordlistEnglish() {
 
 				for (var j in entries.lexemes[i].definitions) {
 					definitions[j] = {
-						"lexeme" : entries.lexemes[i].definitions[j].lexeme,
-						"ipa" : entries.lexemes[i].definitions[j].ipa,
-						"usage" : entries.lexemes[i].definitions[j].usage,
-						"example" : entries.lexemes[i].definitions[j].example,
-						"etymology" : entries.lexemes[i].definitions[j].etymology
+						"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
+						"ipa" 		: entries.lexemes[i].definitions[j].ipa,
+						"usage" 		: entries.lexemes[i].definitions[j].usage,
+						"example" 	: entries.lexemes[i].definitions[j].example,
+						"etymology" : entries.lexemes[i].definitions[j].etymology,
+						"irregular" : entries.lexemes[i].definitions[j].irregular
 					}
 				}
 
@@ -270,7 +309,7 @@ function populateWordlistEnglish() {
 	);
 }
 
-function populateWordlistCantade() {
+function populateWordListForeign() {
 	console.log("changed");
 	setContent("<h1>Fetching data...</h1>");
 	$.post( connection, {
@@ -339,6 +378,87 @@ function populateWordlistCantade() {
 				}
 
 				html = html + createEntry(true, definitions, lexemeCount, entry.lexClass, entry.definition, entry.irregular, entry.ipa, usageString);
+			}
+
+			// Show lexicon
+			setContent(html);
+			setWordcount(wordcount);
+		}
+	);
+}
+
+function populateWordlistForeign() {
+	//console.log("populateWordListLocal");
+	setContent("<h1>Fetching data...</h1>");
+
+	$.post( connection, {
+		call: "getWordlistForeignSorted"
+	} )
+    .done(
+		function( data ) {
+			console.log(data);
+			var html = "";
+			var currentLetter = "";
+			var previousLexeme = "";
+			var numbers = ["0", "1", "2", "3", "4" ,"5", "6", "7", "8" , "9"];
+			var wordcount = 0;
+
+			if(data) {
+				try {
+					var entries = JSON.parse(data);
+				}
+				catch(e) {
+					setContent(e + ": " + data);
+					return;
+				}
+			}
+
+			console.log(entries.conlang);
+			createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
+
+			// Create headline
+
+
+			for (var i in entries.lexemes) {
+				wordcount++;
+
+				var lexeme			= entries.lexemes[i].lexeme;
+				var lexClass 		= entries.lexemes[i].lexClass;
+				var definitions	= Array();
+
+				var entryInitalLetter = getInitialLetter(lexeme);
+				var isNumber = jQuery.inArray(entryInitalLetter, numbers) !== -1;
+
+				for (var j in entries.lexemes[i].definitions) {
+					definitions[j] = {
+						"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
+						"ipa" 		: entries.lexemes[i].definitions[j].ipa,
+						"usage" 		: entries.lexemes[i].definitions[j].usage,
+						"example" 	: entries.lexemes[i].definitions[j].example,
+						"etymology" : entries.lexemes[i].definitions[j].etymology,
+						"irregular" : entries.lexemes[i].definitions[j].irregular
+					}
+				}
+
+				if (currentLetter != entryInitalLetter) {
+					if( !isNumber ) { // isNumber false
+						if (entryInitalLetter != "") {
+							currentLetter = entryInitalLetter;
+							html = html + createHeadline(entryInitalLetter);
+						}
+					}
+					else {
+						if (currentLetter != "#") {
+							currentLetter = "#";
+							html = html + createHeadline("#");
+						}
+					}
+				}
+				else {
+					currentLetter = entryInitalLetter;
+				}
+
+				html = html + createEntryNew(false, lexeme, lexClass, definitions);
 			}
 
 			// Show lexicon
@@ -425,7 +545,9 @@ function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }
 
-function capitalizeString(string)
-{
+function capitalizeString(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+// URL manipulation for later use:
+// window.history.pushState("object or string", "Title", "/new-url");
