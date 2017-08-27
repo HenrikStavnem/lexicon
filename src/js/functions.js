@@ -225,7 +225,14 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 }
 
 function createLexiconHeadline(conlang, conlangPrefix, conlangSuffix, targetLang) {
-	$("#lexicon-headline").html("<h1>" + capitalizeString(targetLang) + " &mdash; <span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + conlangSuffix + "</h1>");
+	if (lexiconDirection == 'local') {
+		console.log("headline local");
+		$("#lexicon-headline").html("<h1>" + capitalizeString(targetLang) + " &mdash; <span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + conlangSuffix + "</h1>");
+	}
+	else {
+		console.log("headline foreign");
+		$("#lexicon-headline").html("<h1><span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + conlangSuffix + " &mdash; " + capitalizeString(targetLang) + "</h1>");
+	}
 }
 
 function populateWordListLocal() {
@@ -233,7 +240,7 @@ function populateWordListLocal() {
 	setContent("<h1>Fetching data...</h1>");
 
 	$.post( connection, {
-		call: "getWordlistEnglishSorted"
+		call: "getWordlistLocalSorted"
 	} )
     .done(
 		function( data ) {
