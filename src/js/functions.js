@@ -28,6 +28,10 @@ function init(call) {
 		changeLexiconDirection();
 	});
 
+	$( "#new-word-button" ).on( "click", function() {
+		initNewWord();
+	});
+
 
 	populateLexiconSelector();
 }
@@ -40,8 +44,6 @@ function changeLexiconDirection() {
 	}
 
 	populateWordlist();
-
-	console.log("Target changed to : " + lexiconDirection);
 }
 
 function populateWordlist() {
@@ -53,7 +55,6 @@ function populateWordlist() {
 }
 
 function setSelectedLanguage(val) {
-	console.log("setSelectedLanguage");
 	$.post( session, {
 		call: "setSelectedLanguage",
 		newLang: $( "#select-language" ).val()
@@ -90,16 +91,6 @@ function populateLexiconSelector() {
 			});
 		}
 	);
-}
-
-function initNewWord() {
-	//TODO
-	console.info("TODO initNewWord");
-
-	// Input listeners
-	$( ".input-listen" ).on( "input", function() {
-		notify() ;
-	});
 }
 
 function notify() {
@@ -240,7 +231,8 @@ function populateWordListLocal() {
 	setContent("<h1>Fetching data...</h1>");
 
 	$.post( connection, {
-		call: "getWordlistLocalSorted"
+		call: "getWordlistLocalSorted",
+		lookup: ""
 	} )
     .done(
 		function( data ) {
@@ -265,7 +257,6 @@ function populateWordListLocal() {
 			createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
 
 			// Create headline
-
 
 			for (var i in entries.lexemes) {
 				wordcount++;
@@ -316,11 +307,11 @@ function populateWordListLocal() {
 	);
 }
 
-function populateWordListForeign() {
-	console.log("changed");
+function populateWordListForeignDELETE() {  // todo: Delete if not needed
 	setContent("<h1>Fetching data...</h1>");
 	$.post( connection, {
-		call: "getWordlistCantadeSorted"
+		call: "getWordlistCantadeSorted",
+		lookup: "" // TODO: Remember to remove hardcoded string
 	} )
     .done(
 		function( data ) {
@@ -384,7 +375,7 @@ function populateWordListForeign() {
 					}
 				}
 
-				html = html + createEntry(true, definitions, lexemeCount, entry.lexClass, entry.definition, entry.irregular, entry.ipa, usageString);
+				html = html + createEntry(true, definitions, entry.lexClass, entry.definition, entry.irregular, entry.ipa, usageString);
 			}
 
 			// Show lexicon
@@ -395,11 +386,11 @@ function populateWordListForeign() {
 }
 
 function populateWordlistForeign() {
-	//console.log("populateWordListLocal");
 	setContent("<h1>Fetching data...</h1>");
 
 	$.post( connection, {
-		call: "getWordlistForeignSorted"
+		call: "getWordlistForeignSorted",
+		lookup: ""
 	} )
     .done(
 		function( data ) {
@@ -424,7 +415,6 @@ function populateWordlistForeign() {
 			createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
 
 			// Create headline
-
 
 			for (var i in entries.lexemes) {
 				wordcount++;
@@ -480,7 +470,6 @@ function setContent(value) {
 }
 
 function setWordcount(value) {
-	console.log("setWordCount");
 	$("#wordcount").html("Total lexemes: " + value);
 }
 
@@ -503,7 +492,7 @@ function createHeadline(text) {
 	return "<h1>" + text + "</h1>";
 }
 
-function createEntry(isCantade, lexeme, lexemeCount, lexClass, definition, irregular, ipa, usage) {
+function createEntry(isCantade, lexeme, lexClass, definition, irregular, ipa, usage) {
 	var irregularMark = "";
 	if (irregular) {
 		irregularMark = "*";
@@ -533,6 +522,7 @@ function createEntry(isCantade, lexeme, lexemeCount, lexClass, definition, irreg
 		result = 	result + "<span class='lexeme'>" + definition + "</span>";
 		if (lexemeCount > 1) {
 			//result = 	result + "<span class='lexemeCount'>" + lexemeCount + "</span> ";
+			//console.log("###" + definition);
 		}
 		result = 	result + " <span class='class " + lexClass + "'>" + lexClass + "</span> ";
 		result = 	result + "<span class='definition'>" + lexeme + "</span>";

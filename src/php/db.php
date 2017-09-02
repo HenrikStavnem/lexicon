@@ -29,6 +29,20 @@
 		$conlangSuffix = "Suf";
 		*/
 
+		$lookup = "";
+		$lookupSql = "";
+		if (isset($_POST['lookup'])) {
+			$lookup = $_POST['lookup'];
+		}
+		if ($lookup !== "") {
+			if ($isToLocal) {
+				$lookupSql = "WHERE definition = '$lookup'";
+			}
+			else {
+				$lookupSql = "WHERE word = '$lookup'";
+			}
+		}
+
 		if (isset($_SESSION["selectedLang"])) {
 			$selectedLanguage = $_SESSION["selectedLang"];
 		}
@@ -66,6 +80,7 @@
 				etymology, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new, examples
 			FROM
 				$table
+			$lookupSql
 			ORDER BY
 				definition, word ASC
 		");
