@@ -17,29 +17,12 @@
 	$mysqli->set_charset("utf8");
 
 	switch($call) {
-		case "getWordlistCantadeSorted"		:	getWordlistCantadeSorted($mysqli);	break;
-		case "getWordlistLocalSorted"			:	getWordlistLocalSorted($mysqli);	break;
-		case "getLexiconList"					:	getLexiconList($mysqli); 				break;
-		case "getWordlistForeignSorted"		:	getWordlistForeignSorted($mysqli);	break;
+		case "getLexiconList"					:	getLexiconList($mysqli); 					break;
+		case "getWordlistLocalSorted"			:	getWordlistSorted($mysqli, true);		break;
+		case "getWordlistForeignSorted"		:	getWordlistSorted($mysqli, false);		break;
 	}
 
-	// TEST OVERRIDE
-		$lexemes2 = null;
-		$lexemes2[0] = array(
-			"lexeme" 				=> "wordEng",
-			"lexClass" 				=> "verb",
-			"definitions"			=> array(
-				"0"					=> array(
-					"lexeme" 				=> "wordCon",
-					"ipa" 					=> "pronounciation",
-					"usage" 					=> "it is used, yes",
-					"example" 				=> "Homonymous entry",
-					"etymology"				=> "very much ancient"
-				)
-			)
-		);
-
-	function getWordlistLocalSorted($mysqli) {
+	function getWordlistSorted($mysqli, $isToLocal) {
 		/*
 		$conlangName = "CONLANG";
 		$conlangPrefix = "Pre";
@@ -80,7 +63,7 @@
 		$stmt = $mysqli->prepare("
 			SELECT
 				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
-				etymology, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new
+				etymology, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new, examples
 			FROM
 				$table
 			ORDER BY
@@ -89,7 +72,7 @@
 
 		$stmt->execute();
 		$stmt->store_result();
-		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $verbConjugation, $pronounSubclass, $usage, $note, $new);
+		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $verbConjugation, $pronounSubclass, $usage, $note, $new, $examples);
 
 		$result = array();
 		$lexemes = array();
@@ -99,9 +82,22 @@
 			**	Definitions can be appear as "word1, word2, word2" in the database
 			*/
 			$definitionsArray = explode(",", $definitionAsIs);
+			$definitionsArray = array_map('trim',$definitionsArray); // remove spaces
+			sort($definitionsArray);
+
 			foreach($definitionsArray as $definition) {
+				// base output on direction
+				if ($isToLocal) {
+					$lexemeOutput		= $lex;
+					$definitionOutput = $definition;
+				}
+				else {
+					$lexemeOutput 		= $definition;
+					$definitionOutput = $lex;
+				}
+
 				// Check if identical definition is already found
-				$key = array_search($definition, array_column($lexemes, 'lexeme'));
+				$key = array_search($definitionOutput, array_column($lexemes, "lexeme"));
 
 				if ($irregular == 1) {
 					$irregular = true;
@@ -112,29 +108,30 @@
 				// If key is not found, create new entry
 				if ($key === false) {
 					$lexemes[] = array(
-						"lexeme" 				=> trim($definition),
+						"lexeme" 				=> trim($definitionOutput),
 						"lexClass" 				=> $class,
 						"definitions"			=> array(
 							"0"						=> array(
-								"lexeme" 				=> $lex,
+								"lexeme" 				=> $lexemeOutput,
 								"ipa" 					=> $pronounciation,
 								"usage" 					=> $usage,
-								"example" 				=> "",
+								"example" 				=> $examples,
 								"etymology"				=> $etymology,
 								"irregular"				=> $irregular
 							)
 						)
 					);
 				}
+				// If key is found
 				else {
 					// Push to array
 					if ($lexemes[$key]["lexClass"] == $class) {
 						array_push($lexemes[$key]["definitions"],
 							array(
-									"lexeme" 			=> $lex,
+									"lexeme" 			=> $lexemeOutput,
 									"ipa" 				=> $pronounciation,
 									"usage" 				=> $usage,
-									"example" 			=> "",
+									"example" 			=> $examples,
 									"etymology"			=> $etymology,
 									"irregular"			=> $irregular
 								)
@@ -143,14 +140,14 @@
 					else {
 						// New entry
 						$lexemes[] = array(
-							"lexeme" 				=> trim($definition),
+							"lexeme" 				=> trim($definitionOutput),
 							"lexClass" 				=> $class,
 							"definitions"			=> array(
 								"0"						=> array(
-									"lexeme" 				=> $lex,
+									"lexeme" 				=> $lexemeOutput,
 									"ipa" 					=> $pronounciation,
 									"usage" 					=> $usage,
-									"example" 				=> "",
+									"example" 				=> $examples,
 									"etymology"				=> $etymology,
 									"irregular"				=> $irregular
 								)
@@ -175,8 +172,6 @@
 
 		echo json_encode($result, JSON_FORCE_OBJECT);
 	}
-
-
 
 	function custom_sort($a,$b) {
 		return $a['lexeme']>$b['lexeme'];
@@ -269,241 +264,4 @@
 	function method1($a,$b) {
 		return ($a[2]["lexemes"]["lexeme"] <= $b[2]["lexemes"]["lexeme"]) ? -1 : 1;
 	}
-
-	function getWordlistForeignSortedBACKUP($mysqli) {
-		/*
-		$conlangName = "CONLANG";
-		$conlangPrefix = "Pre";
-		$conlangSuffix = "Suf";
-		*/
-
-		if (isset($_SESSION["selectedLang"])) {
-			$selectedLanguage = $_SESSION["selectedLang"];
-		}
-		else {
-			$selectedLanguage = "cantade"; // TODO: Change this to first language
-		}
-
-		$stmtConlang = $mysqli->prepare("
-			SELECT
-				lang_id, lang_prefix, lang_name, lang_suffix, lang_target_lang, lang_internal_name
-			FROM
-				lexicon_langs
-			WHERE
-				lang_internal_name = ?
-			LIMIT
-				1
-		");
-
-		$stmtConlang->bind_param('s', $selectedLanguage);
-		$stmtConlang->execute();
-		$stmtConlang->store_result();
-		$stmtConlang->bind_result($id, $prefix, $conlang, $suffix, $targetLang, $internalName);
-
-		while($row = $stmtConlang->fetch()) {
-			$conlangName 	= $conlang;
-			$conlangPrefix = $prefix;
-			$conlangSuffix = $suffix;
-			$targetLang		= $targetLang;
-			$table 			= $internalName;
-		}
-
-		$stmt = $mysqli->prepare("
-			SELECT
-				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
-				etymology, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new
-			FROM
-				$table
-			ORDER BY
-				word, definition ASC
-		");
-
-		$stmt->execute();
-		$stmt->store_result();
-		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $verbConjugation, $pronounSubclass, $usage, $note, $new);
-
-		$result = array();
-		$lexemes = array();
-
-		while($row = $stmt->fetch()) {
-			/*	Splitting up definitions
-			**	Definitions can be appear as "word1, word2, word2" in the database
-			*/
-			$definitionsArray = explode(",", $definitionAsIs);
-			foreach($definitionsArray as $definition) {
-				// Check if identical definition is already found
-				$key = array_search($lex, array_column($lexemes, 'definition'));
-
-				if ($irregular == 1) {
-					$irregular = true;
-				} else {
-					$irregular = false;
-				}
-
-				// If key is not found, create new entry
-				if ($key === false) {
-					$lexemes[] = array(
-						"lexeme" 				=> trim($lex),
-						"lexClass" 				=> $class,
-						"definitions"			=> array(
-							"0"						=> array(
-								"lexeme" 				=> $definition,
-								"ipa" 					=> $pronounciation,
-								"usage" 					=> $usage,
-								"example" 				=> "",
-								"etymology"				=> $etymology,
-								"irregular"				=> $irregular
-							)
-						)
-					);
-				}
-				else {
-					// Push to array
-					if ($lexemes[$key]["lexClass"] == $class) {
-						array_push($lexemes[$key]["definitions"],
-							array(
-									"lexeme" 			=> $definition,
-									"ipa" 				=> $pronounciation,
-									"usage" 				=> $usage,
-									"example" 			=> "",
-									"etymology"			=> $etymology,
-									"irregular"			=> $irregular
-								)
-						);
-					}
-					else {
-						// New entry
-						$lexemes[] = array(
-							"lexeme" 				=> trim($lex),
-							"lexClass" 				=> $class,
-							"definitions"			=> array(
-								"0"						=> array(
-									"lexeme" 				=> $definition,
-									"ipa" 					=> $pronounciation,
-									"usage" 					=> $usage,
-									"example" 				=> "",
-									"etymology"				=> $etymology,
-									"irregular"				=> $irregular
-								)
-							)
-						);
-					}
-				}
-			}
-		}
-
-		// Sort the multidimensional array
-	  $lexemes = array_orderby($lexemes, 'lexeme', SORT_ASC, 'lexClass', SORT_ASC);
-
-		// Create JSON
-		$result = array(
-				"conlang" => $conlangName,
-				"conlangPrefix" => $conlangPrefix,
-				"conlangSuffix" => $conlangSuffix,
-				"targetLang" => $targetLang,
-				"lexemes" => $lexemes
-			);
-
-		echo json_encode($result, JSON_FORCE_OBJECT);
-	}
-
-
-
-// ##########################################################################
-
-
-
-	function getWordlistForeignSorted($mysqli) {
-		/*
-		$conlangName = "CONLANG";
-		$conlangPrefix = "Pre";
-		$conlangSuffix = "Suf";
-		*/
-
-		if (isset($_SESSION["selectedLang"])) {
-			$selectedLanguage = $_SESSION["selectedLang"];
-		}
-		else {
-			$selectedLanguage = "cantade"; // TODO: Change this to first language
-		}
-
-		$stmtConlang = $mysqli->prepare("
-			SELECT
-				lang_id, lang_prefix, lang_name, lang_suffix, lang_target_lang, lang_internal_name
-			FROM
-				lexicon_langs
-			WHERE
-				lang_internal_name = ?
-			LIMIT
-				1
-		");
-
-		$stmtConlang->bind_param('s', $selectedLanguage);
-		$stmtConlang->execute();
-		$stmtConlang->store_result();
-		$stmtConlang->bind_result($id, $prefix, $conlang, $suffix, $targetLang, $internalName);
-
-		while($row = $stmtConlang->fetch()) {
-			$conlangName 	= $conlang;
-			$conlangPrefix = $prefix;
-			$conlangSuffix = $suffix;
-			$targetLang		= $targetLang;
-			$table 			= $internalName;
-		}
-
-		$stmt = $mysqli->prepare("
-			SELECT
-				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
-				etymology, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new
-			FROM
-				$table
-			ORDER BY
-				word, definition ASC
-		");
-
-		$stmt->execute();
-		$stmt->store_result();
-		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $verbConjugation, $pronounSubclass, $usage, $note, $new);
-
-		$result = array();
-		$lexemes = array();
-
-		while($row = $stmt->fetch()) {
-			/*	Splitting up definitions
-			**	Definitions can be appear as "word1, word2, word2" in the database
-			*/
-			$definitionsArray = explode(",", $definitionAsIs);
-
-			$lexemes[] = array(
-				"lexeme" 				=> trim($lex),
-				"lexClass" 				=> $class,
-				"definitions"			=> array(
-					"0"						=> array(
-						"lexeme" 				=> $definitionAsIs,
-						"ipa" 					=> $pronounciation,
-						"usage" 					=> $usage,
-						"example" 				=> "",
-						"etymology"				=> $etymology,
-						"irregular"				=> $irregular
-					)
-				)
-			);
-		}
-
-		// Sort the multidimensional array
-	  $lexemes = array_orderby($lexemes, 'lexeme', SORT_ASC, 'lexClass', SORT_ASC);
-
-		// Create JSON
-		$result = array(
-				"conlang" => $conlangName,
-				"conlangPrefix" => $conlangPrefix,
-				"conlangSuffix" => $conlangSuffix,
-				"targetLang" => $targetLang,
-				"lexemes" => $lexemes
-			);
-
-		echo json_encode($result, JSON_FORCE_OBJECT);
-	}
-
-
 ?>

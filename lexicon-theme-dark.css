@@ -1,20 +1,87 @@
-body {	margin: 20px;}
-h1 {	font-family: 'Roboto Slab', serif;	color: #ddd;}
-p {	font-family: 'Roboto Slab', serif;	font-size: 12pt;	padding-left: 10px;	margin-top: 0px;	margin-bottom: 0px;}
-p:first-letter {	margin-left: -10px;}
-#container {	margin-left: 15px	-webkit-column-count: 5; /* Chrome, Safari, Opera */	-moz-column-count:5; /* Firefox */	column-count: 5;}
-#wordcount {	font-family: 'Roboto Slab', serif;	color: #CF8B43;	font-weight: 700;	margin-top: 100px;}
-body {	color: #ff0000;	background-color: #333333;}
-.lexeme {	color: #CF8B43;	font-weight: 700;}.label {	letter-spacing: 2px;	font-size: 8pt;	line-height: 12pt;	text-transform: uppercase;	color: #888888;}
-.number-label {	color: #009e2f;}
-.class {	font-style: italic;	color: #9875AA;	padding-left: 5px;	padding-right: 5px;}
-.class.noun {	color: #E35F48;	}
-.class.verb {	color: #FBE74C;	}
-.class.adjective {	color: #77A2C4;	}
-.class.pronoun {	color: #5E9754;}
-.class.preposition {	color: #007DC3;}
-.definition {	color: #AACA75;}
-.irregular {	color: #FFFFFF;	font-weight: 700;}
-.ipa {	color: #FFFFFF;	/*color: #9875AA;*/	font-family: 'Noto Sans', sans-serif;}
-.usage {	color: #FFFFFF;}
-.etymology, .langPrefix, .langSuffix {	color: #AAAAAA;}
+body {
+   margin: 20px;
+}
+h1 {
+   font-family: 'Roboto Slab', serif;
+   color: #ddd;
+}
+p {
+   font-family: 'Roboto Slab', serif;
+   font-size: 12pt;
+	padding-left: 10px;
+   margin-top: 0px;
+   margin-bottom: 0px;
+   break-inside: avoid-column;
+}
+p:first-letter {
+   margin-left: -10px;
+}
+#container {
+   margin-left: 15px;
+   -webkit-column-count: 5; /* Chrome, Safari, Opera */
+   -moz-column-count:5; /* Firefox */
+   column-count: 5;
+}
+#wordcount {
+   font-family: 'Roboto Slab', serif;
+   color: #CF8B43;
+   font-weight: 700;
+   margin-top: 100px;
+}
+body {
+   color: #ff0000;
+   background-color: #333333;
+}
+.lexeme {
+   color: #CF8B43;
+   font-weight: 700;
+}
+.label {
+   letter-spacing: 2px;
+   font-size: 8pt;
+   line-height: 12pt;
+   text-transform: uppercase;
+   color: #888888;
+}
+.number-label {
+   color: #009e2f;
+}
+.class {
+   font-style: italic;
+   color: #9875AA;
+   padding-left: 5px;
+   padding-right: 5px;
+}
+.class.noun {
+   color: #E35F48;
+}
+.class.verb {
+   color: #FBE74C;
+}
+.class.adjective {
+   color: #77A2C4;
+}
+.class.pronoun {
+   color: #5E9754;
+}
+.class.preposition {
+   color: #007DC3;
+}
+.definition {
+   color: #AACA75;
+}
+.irregular {
+   color: #FFFFFF;
+   font-weight: 700;
+}
+.ipa {
+   color: #FFFFFF;
+   /*color: #9875AA;*/
+   font-family: 'Noto Sans', sans-serif;
+}
+.usage {
+   color: #FFFFFF;
+}
+.etymology, .langPrefix, .langSuffix {
+   color: #AAAAAA;
+}
