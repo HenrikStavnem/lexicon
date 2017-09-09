@@ -7,12 +7,8 @@ function initNewWord() {
 		<div class='newWord col_left'>
 
 			<div class='row'>
-		      <div id='new-entry-local-preview' class='preview-box'>
-		         Here goes preview<br />
-		      </div>
-				<div id='new-entry-foreign-preview' class='preview-box'>
-		         Here goes preview<br />
-				</div>
+				<div id='new-entry-foreign-preview' class='preview-box'></div>
+		      <div id='new-entry-local-preview' class='preview-box'></div>
 	      </div>
 
 			<div class='input-col'>
@@ -35,7 +31,7 @@ function initNewWord() {
 	$('#input_definition').bind('input',function() {
 		var value = $('#input_definition').val();
 		if (value != "") {
-			getWordlistAsJson(lexiconDirection, value, "preview-local");
+			getWordlistAsJson("local", value, "preview-local");
 		}
 		else {
 			$("#new-entry-local-preview").html("");
@@ -46,7 +42,7 @@ function initNewWord() {
 		console.log("lexeme get");
 		var value = $('#input_lexeme').val();
 		if (value != "") {
-			getWordlistAsJson(lexiconDirection, value, "preview-foreign");
+			getWordlistAsJson("foreign", value, "preview-foreign");
 		}
 		else {
 			$("#new-entry-foreign-preview").html("");
