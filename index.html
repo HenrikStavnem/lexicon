@@ -5,15 +5,17 @@
 
 		<link href='https://fonts.googleapis.com/css?family=Roboto+Slab|Noto+Sans' rel='stylesheet'>
 		<!--<link rel='shortcut icon' href='../../common/icos/specifics/dictionary.ico' />-->
+		<link rel='stylesheet' type='text/css' href='layout.css' />
 		<link rel='stylesheet' type='text/css' href='lexicon-theme-dark.css' />
 
 		<script type='text/javascript' src='http://code.jquery.com/jquery.min.js' data-cfasync='false'  charset='utf-8'></script>
 		<script type='text/javascript' src='http://code.jquery.com/ui/1.11.3/jquery-ui.js'></script>
+		<script type='text/javascript' src='src/js/editLexeme.js'></script>
 		<script type='text/javascript' src='src/js/functions.js'></script>
 
 		<script>
 			$(function() {
-				init("lex_ec");
+				init("newword");
 			});
 		</script>
 	</head>
@@ -26,6 +28,7 @@
 				Show abbreviations
 			</input>
 			<button id='lexicon-direction-button'>Switch Direction</button>
+			<button id='new-word-button'>Init new word</button>
 		</div>
 
 		<div id='lexicon-selector'></div>

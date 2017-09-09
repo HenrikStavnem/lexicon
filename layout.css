@@ -1,4 +1,19 @@
 /*	Layout style sheets should ideally contain no colors	All colors should be in the individual themes*/
+.lexicon {
+   -webkit-column-count: 5; /* Chrome, Safari, Opera */
+   -moz-column-count:5; /* Firefox */
+   column-count: 5;
+}
+
+.preview-box {
+   background-color: #21252b;
+   flex: 1 1 auto;
+}
+
+.row {
+   display:flex;
+}
+
 .newWord.col_left {
    width: 80%;
    height: 100px;

@@ -5,11 +5,129 @@ var 	connection = "src/php/db.php",
 		lexiconDirection = "local"
 	;
 
+function pop() { // TODO: Need better name
+	getWordlistAsJson(lexiconDirection, "", "lexicon");
+}
+
+function getWordlistAsJson(lexiconDirection, lookup, callback) {
+	var 	call = "getWordlistLocalSorted",
+			wordlist;
+
+	if (lexiconDirection != "local") {
+		call = "getWordlistForeignSorted";
+	}
+
+	$.post( connection, {
+		call: call,
+		lookup: lookup
+	} )
+    .done(
+		function( data, wordlist ) {
+			wordlist = data;
+
+			console.log(data);
+
+			getWordlistCallback(wordlist, callback);
+		}
+	);
+}
+
+function getWordlistCallback(wordlist, callback) {
+	switch (callback) {
+		case "lexicon": 				populateWordlist(wordlist, "lexicon"); 			break;
+		case "preview-local": 		populateWordlist(wordlist, "preview-local"); 	break;
+		case "preview-foreign": 	populateWordlist(wordlist, "preview-foreign");	break;
+	}
+}
+
+function populateDestination(html, destination) {
+	console.log("populateDestination to " + destination);
+	switch (destination) {
+		case "lexicon": 				setContent(html); 			break;
+		case "preview-local": 		setLocalPreview(html);		break;
+		case "preview-foreign": 	setForeignPreview(html);	break;
+	}
+}
+
+function populateWordlist(wordlist, destination) {
+	console.log("populateWordList");
+	//console.log(wordlist);
+	var html = "<div class='lexicon'>";
+	var currentLetter = "";
+	var previousLexeme = "";
+	var numbers = ["0", "1", "2", "3", "4" ,"5", "6", "7", "8" , "9"];
+	var wordcount = 0;
+
+	if(wordlist) {
+		try {
+			var entries = JSON.parse(wordlist);
+		}
+		catch(e) {
+			setContent(e + ": " + wordlist);
+			return;
+		}
+	}
+
+	console.log(entries.conlang);
+	createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
+
+	// Create headline
+
+	for (var i in entries.lexemes) {
+		wordcount++;
+
+		var lexeme			= entries.lexemes[i].lexeme;
+		var lexClass 		= entries.lexemes[i].lexClass;
+		var definitions	= Array();
+
+		var entryInitalLetter = getInitialLetter(lexeme);
+		var isNumber = jQuery.inArray(entryInitalLetter, numbers) !== -1;
+
+		for (var j in entries.lexemes[i].definitions) {
+			definitions[j] = {
+				"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
+				"ipa" 		: entries.lexemes[i].definitions[j].ipa,
+				"usage" 		: entries.lexemes[i].definitions[j].usage,
+				"example" 	: entries.lexemes[i].definitions[j].example,
+				"etymology" : entries.lexemes[i].definitions[j].etymology,
+				"irregular" : entries.lexemes[i].definitions[j].irregular
+			}
+		}
+
+		if (currentLetter != entryInitalLetter) {
+			if( !isNumber ) { // isNumber false
+				if (entryInitalLetter != "") {
+					currentLetter = entryInitalLetter;
+					html = html + createHeadline(entryInitalLetter);
+				}
+			}
+			else {
+				if (currentLetter != "#") {
+					currentLetter = "#";
+					html = html + createHeadline("#");
+				}
+			}
+		}
+		else {
+			currentLetter = entryInitalLetter;
+		}
+
+		html = html + createEntryNew(false, lexeme, lexClass, definitions);
+	}
+
+	html = html + "</div>";
+
+	// Show lexicon
+	//setContent(html);
+	populateDestination(html, destination);
+	setWordcount(wordcount);
+}
+
 function init(call) {
 
 	switch(call) {
 		case "lex_test": test(); break;
-		case "lex_ec"	: populateWordListLocal(); break;
+		case "lex_ec"	: pop(); /*populateWordListLocal();*/  break;
 		case "lex_ce"	: populateWordListForeign(); break;
 		case "newword"	: initNewWord(); break;
 	}
@@ -21,7 +139,7 @@ function init(call) {
 		else
 			useAbbreviations = true;
 
-		populateWordListLocal();
+		//populateWordListLocal();
 	});
 
 	$( "#lexicon-direction-button" ).on( "click", function() {
@@ -37,21 +155,27 @@ function init(call) {
 }
 
 function changeLexiconDirection() {
+	console.log("changeLexiconDirection");
 	if (lexiconDirection == "local") {
 		lexiconDirection = "foreign";
 	} else {
 		lexiconDirection = "local";
 	}
 
-	populateWordlist();
+	getWordlistAsJson(lexiconDirection, "", "lexicon");
+	//populateWordlist_OLD();
 }
 
-function populateWordlist() {
+function populateWordlist_OLD() {
+	console.log("populateWordlist_OLD");
+	getWordlistAsJson(lexiconDirection, "", "lexicon");
+	/*
 	if (lexiconDirection == "local") {
 		populateWordListLocal();
 	} else {
 		populateWordlistForeign();
 	}
+	*/
 }
 
 function setSelectedLanguage(val) {
@@ -87,7 +211,7 @@ function populateLexiconSelector() {
 				var val = $( "#select-language" ).val();
 				setSelectedLanguage(val);
 
-				populateWordlist();
+				pop();
 			});
 		}
 	);
@@ -159,6 +283,9 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 			result = 	result + "<br /><span class='label'> " + number + ":</span> ";
 			result = 	result + "<span class='definition'>" + definitions[i].lexeme + "</span>";
 
+			/// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			result = 	result + "<span class='native'> " + definitions[i].lexeme + "</span>";
+
 			if (definitions[i].irregular) {
 				result = 	result + "* ";
 			} else {
@@ -186,6 +313,9 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 	}
 	else {
 		result = 	result + "<span class='definition'>" + definitions[0].lexeme + "</span>";
+
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!
+		result = 	result + "<span class='native'> " + definitions[0].lexeme + "</span>";
 
 		if (definitions[0].irregular) {
 			result = 	result + "* ";

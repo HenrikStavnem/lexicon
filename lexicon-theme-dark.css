@@ -1,3 +1,9 @@
+@font-face
+{
+	font-family: 'confont';
+	src: url('res/verdurian.ttf') format('truetype');
+}
+
 body {
    margin: 20px;
 }
@@ -18,9 +24,6 @@ p:first-letter {
 }
 #container {
    margin-left: 15px;
-   -webkit-column-count: 5; /* Chrome, Safari, Opera */
-   -moz-column-count:5; /* Firefox */
-   column-count: 5;
 }
 #wordcount {
    font-family: 'Roboto Slab', serif;
@@ -85,3 +88,7 @@ body {
 .etymology, .langPrefix, .langSuffix {
    color: #AAAAAA;
 }
+.native {
+   font-family: 'confont', sans-serif;
+   color: #77A2C4;
+}
