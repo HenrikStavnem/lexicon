@@ -8,10 +8,18 @@
 .preview-box {
    background-color: #21252b;
    flex: 1 1 auto;
+   min-height: 300px;
 }
 
 .row {
    display:flex;
+}
+
+.newWord.input-headline {
+   font-family: 'Roboto Slab', serif;
+   color: #222; //ddd
+   font-size: 16pt;
+   padding-right: 20px;
 }
 
 .newWord.col_left {

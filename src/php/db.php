@@ -42,6 +42,9 @@
 				$lookupSql = "WHERE word = '$lookup'";
 			}
 		}
+		else {
+			//$lookupSql = "WHERE definition = 'have'"; // TEST ONLY
+		}
 
 		if (isset($_SESSION["selectedLang"])) {
 			$selectedLanguage = $_SESSION["selectedLang"];
@@ -82,7 +85,7 @@
 				$table
 			$lookupSql
 			ORDER BY
-				definition, word ASC
+				definition, class, word ASC
 		");
 
 		$stmt->execute();
@@ -91,6 +94,15 @@
 
 		$result = array();
 		$lexemes = array();
+
+		// If potential new word is set
+		if (isset($_POST['newword'])) {
+			$newWord = $_POST['newword'];
+			if ($newWord != null) {
+				$newWordJson = $newWord;
+				$lexemes[] = $newWordJson;
+			}
+		}
 
 		while($row = $stmt->fetch()) {
 			/*	Splitting up definitions
@@ -101,6 +113,7 @@
 			sort($definitionsArray);
 
 			foreach($definitionsArray as $definition) {
+				$definition = trim($definition);
 				// base output on direction
 				if ($isToLocal) {
 					$lexemeOutput		= $lex;
@@ -114,6 +127,9 @@
 				// Check if identical definition is already found
 				$key = array_search($definitionOutput, array_column($lexemes, "lexeme"));
 
+				// TODO: New key finding implementation
+				//$keys = array_keys($definitionsArray, array_column($lexemes, "lexeme"));
+
 				if ($irregular == 1) {
 					$irregular = true;
 				} else {
@@ -124,10 +140,11 @@
 				if ($key === false) {
 					$lexemes[] = array(
 						"lexeme" 				=> trim($definitionOutput),
-						"lexClass" 				=> $class,
+						//"lexClass" 				=> $class,
 						"definitions"			=> array(
 							"0"						=> array(
 								"lexeme" 				=> $lexemeOutput,
+								"lexClass" 				=> $class,
 								"ipa" 					=> $pronounciation,
 								"usage" 					=> $usage,
 								"example" 				=> $examples,
@@ -140,10 +157,11 @@
 				// If key is found
 				else {
 					// Push to array
-					if ($lexemes[$key]["lexClass"] == $class) {
+					//if ($lexemes[$key]["lexClass"] == $class) {
 						array_push($lexemes[$key]["definitions"],
 							array(
 									"lexeme" 			=> $lexemeOutput,
+									"lexClass" 			=> $class,
 									"ipa" 				=> $pronounciation,
 									"usage" 				=> $usage,
 									"example" 			=> $examples,
@@ -151,7 +169,8 @@
 									"irregular"			=> $irregular
 								)
 						);
-					}
+					//}
+					/*
 					else {
 						// New entry
 						$lexemes[] = array(
@@ -169,12 +188,14 @@
 							)
 						);
 					}
+					*/
 				}
 			}
 		}
 
 		// Sort the multidimensional array
-	  $lexemes = array_orderby($lexemes, 'lexeme', SORT_ASC, 'lexClass', SORT_ASC);
+	  $lexemes = array_orderby($lexemes, 'lexeme');
+	  //$lexemes = array_orderby($lexemes, 'lexeme', SORT_ASC, 'lexClass', SORT_ASC);
 
 		// Create JSON
 		$result = array(

@@ -4,6 +4,12 @@
 	src: url('res/verdurian.ttf') format('truetype');
 }
 
+@font-face
+{
+	font-family: 'cantade';
+	src: url('res/cantade.ttf') format('truetype');
+}
+
 body {
    margin: 20px;
 }
@@ -91,4 +97,11 @@ body {
 .native {
    font-family: 'confont', sans-serif;
    color: #77A2C4;
+	/* BELOW ARE FOR TEST PURPOSES */
+	/*
+	font-family: 'cantade', sans-serif;
+	text-transform: uppercase;
+	font-size: 24pt;
+	line-height: 12pt;
+	*/
 }

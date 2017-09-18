@@ -6,10 +6,11 @@ var 	connection = "src/php/db.php",
 	;
 
 function pop() { // TODO: Need better name
-	getWordlistAsJson(lexiconDirection, "", "lexicon");
+	console.info("pop");
+	getWordlistAsJson(lexiconDirection, "", null, "lexicon");
 }
 
-function getWordlistAsJson(lexiconDirection, lookup, callback) {
+function getWordlistAsJson(lexiconDirection, lookup, newWord, callback) {
 	var 	call = "getWordlistLocalSorted",
 			wordlist;
 
@@ -19,7 +20,8 @@ function getWordlistAsJson(lexiconDirection, lookup, callback) {
 
 	$.post( connection, {
 		call: call,
-		lookup: lookup
+		lookup: lookup,
+		newword: newWord
 	} )
     .done(
 		function( data, wordlist ) {
@@ -86,6 +88,7 @@ function populateWordlist(wordlist, destination) {
 		for (var j in entries.lexemes[i].definitions) {
 			definitions[j] = {
 				"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
+				"lexClass" 	: entries.lexemes[i].definitions[j].lexClass,
 				"ipa" 		: entries.lexemes[i].definitions[j].ipa,
 				"usage" 		: entries.lexemes[i].definitions[j].usage,
 				"example" 	: entries.lexemes[i].definitions[j].example,
@@ -139,7 +142,7 @@ function init(call) {
 		else
 			useAbbreviations = true;
 
-		//populateWordListLocal();
+		pop();
 	});
 
 	$( "#lexicon-direction-button" ).on( "click", function() {
@@ -162,13 +165,13 @@ function changeLexiconDirection() {
 		lexiconDirection = "local";
 	}
 
-	getWordlistAsJson(lexiconDirection, "", "lexicon");
+	getWordlistAsJson(lexiconDirection, "", null, "lexicon");
 	//populateWordlist_OLD();
 }
 
 function populateWordlist_OLD() {
 	console.log("populateWordlist_OLD");
-	getWordlistAsJson(lexiconDirection, "", "lexicon");
+	getWordlistAsJson(lexiconDirection, "", null, "lexicon");
 	/*
 	if (lexiconDirection == "local") {
 		populateWordListLocal();
@@ -274,13 +277,19 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 	// &#x2D0;
 
 	result = 	result + "<span class='lexeme'>" + lexeme + "</span>";
-	result = 	result + " <span class='class " + lexClass + "'>" + lexemeClass + "</span> ";
+	//result = 	result + " <span class='class " + lexClass + "'>" + lexemeClass + "</span> ";
 
 	if (definitions.length > 1)
 	{
 		for (var i in definitions) {
 			var number = (parseInt(i) + 1);
+			var lexemeClass =  definitions[i].lexClass;
+			if (useAbbreviations) {
+				lexemeClass = abbreviateLexemeClass(lexemeClass)
+			}
+
 			result = 	result + "<br /><span class='label'> " + number + ":</span> ";
+			result = 	result + " <span class='class " + definitions[i].lexClass + "'>" + lexemeClass + "</span> ";
 			result = 	result + "<span class='definition'>" + definitions[i].lexeme + "</span>";
 
 			/// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -312,6 +321,11 @@ function createEntryNew(isCantade, lexeme, lexClass, definitions, ipa) {
 		}
 	}
 	else {
+		var lexemeClass =  definitions[0].lexClass;
+		if (useAbbreviations) {
+			lexemeClass = abbreviateLexemeClass(lexemeClass)
+		}
+		result = 	result + " <span class='class " + definitions[0].lexClass + "'>" + lexemeClass + "</span> ";
 		result = 	result + "<span class='definition'>" + definitions[0].lexeme + "</span>";
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!
