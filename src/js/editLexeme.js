@@ -10,10 +10,10 @@ function initNewWord() {
 
 			<div class='row'>
 				<div id='new-entry-foreign-preview' class='preview-box'></div>
-		      <div id='new-entry-local-preview' class='preview-box'></div>
+		      <div id='new-entry-local-preview' class='preview-box blue'></div>
 	      </div>
 
-			<div class='input-col'>
+			<div class='newWord input-col'>
 				<span class='newWord input-headline'>Lexeme</span>
 				<input type='text' id='input_lexeme' 		class='input-listen' placeholder="Lexeme" /><br />
 
@@ -23,8 +23,20 @@ function initNewWord() {
 				<span class='newWord input-headline'>Class</span>
 				${classSelect}<br />
 
+				<span class='newWord input-headline'>IPA</span>
+				<input type='text' id='input_ipa' 					class='input-listen' placeholder="IPA" /><br />
+
 				<span class='newWord input-headline'>Usage</span>
-				<input type='text' id='input_usage' 	class='input-listen' placeholder="Usage" /><br />
+				<input type='text' id='input_usage' 				class='input-listen' placeholder="Usage" /><br />
+
+				<span class='newWord input-headline'>Phrases</span>
+				<input type='text' id='input_phrases' 				class='input-listen' placeholder="Phrases" /><br />
+
+				<span class='newWord input-headline'>Etymology</span>
+				<input type='text' id='input_etymology' 			class='input-listen' placeholder="Etymology" /><br />
+
+				<span class='newWord input-headline'>Native Orthography</span>
+				<input type='text' id='input_native_orthography' class='input-listen' placeholder="Etymology" /><br />
 			</div>
 
 		</div>
@@ -34,26 +46,24 @@ function initNewWord() {
 			<div>TODO: GOALS HERE</div>
 
 		</div>
-   `; // todo: implement
+   `;
 
 	setContent(html);
 
 	// Input listeners
-	$('#input_definition').bind('input',function() {
-		var lookup = $('#input_definition').val();
-		if (lookup != "") {
-			getWordlistAsJson("local", lookup, parseInputsToNewWordJson("local"), "preview-local");
+	$('.input-listen').bind('input',function() {
+		console.log("input listener");
+		var lookupLocal = $('#input_definition').val();
+		if (lookupLocal != "") {
+			getWordlistAsJson("local", lookupLocal, parseInputsToNewWordJson("local"), "preview-local");
 		}
 		else {
 			$("#new-entry-local-preview").html("");
 		}
-	});
 
-	$('#input_lexeme').bind('input',function() {
-		console.log("lexeme get");
-		var lookup = $('#input_lexeme').val();
-		if (lookup != "") {
-			getWordlistAsJson("foreign", lookup, parseInputsToNewWordJson("foreign"), "preview-foreign");
+		var lookupForeign = $('#input_lexeme').val();
+		if (lookupForeign != "") {
+			getWordlistAsJson("foreign", lookupForeign, parseInputsToNewWordJson("foreign"), "preview-foreign");
 		}
 		else {
 			$("#new-entry-foreign-preview").html("");
@@ -70,8 +80,8 @@ function setForeignPreview(html) {
 }
 
 function populateWordClassSelect() {
-	var html = "<select>"
-		 classes = ["noun","verb","adjective"]; // Todo: Add the rest of the classes
+	var html = "<select id='input_lexClass' class='input-listen'>"
+		 classes = ["noun","verb","adjective","pronoun","adverb","article","particle","preposition","interjection","number","determiner","proper noun","conjunction","prefix","suffix","affix","infix","circumfix"]; // Todo: Add the rest of the classes
 
 	classes.forEach(function(cls) {
 		html = html + `<option>${cls}</option>`;
@@ -83,14 +93,20 @@ function populateWordClassSelect() {
 
 function parseInputsToNewWordJson(direction) {
 	var newWordJson,
-		 lexeme = $('#input_lexeme').val(),
-		 definition = $('#input_definition').val();
+		 lexeme 		= $('#input_lexeme').val(),
+		 definition = $('#input_definition').val(),
+		 lexClass	= $('#input_lexClass').val(),
+		 ipa			= $('#input_ipa').val(),
+		 usage		= $('#input_usage').val(),
+		 phrases		= $('#input_phrases').val(),
+		 etymology	= $('#input_etymology').val();
+		 natOrth		= $('#input_native_orthography').val();
 
 	if (direction == "foreign") {
-		newWordJson = {"lexeme":lexeme,"definitions":{"0":{"lexeme":definition,"lexClass":"noun","ipa":"ipa","usage":"local","example":"This is an example phrase","etymology":"etymology","irregular":false}}};
+		newWordJson = {"lexeme":lexeme,"definitions":{"0":{"lexeme":definition,"lexClass":lexClass,"ipa":ipa,"usage":usage,"example":phrases,"etymology":etymology,"irregular":false, "nativeOrthography" : natOrth}}};
 	}
 	else if (direction == "local") {
-		newWordJson = {"lexeme":definition,"definitions":{"0":{"lexeme":lexeme,"lexClass":"noun","ipa":"ipa","usage":"foreign","example":"How this could look like","etymology":"etymology","irregular":false}}};
+		newWordJson = {"lexeme":definition,"definitions":{"0":{"lexeme":lexeme,"lexClass":lexClass,"ipa":ipa,"usage":usage,"example":phrases,"etymology":etymology,"irregular":false, "nativeOrthography" : natOrth}}};
 	}
 
 	return newWordJson;

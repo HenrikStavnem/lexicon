@@ -8,7 +8,14 @@
 .preview-box {
    background-color: #21252b;
    flex: 1 1 auto;
+   min-width: 300px;
    min-height: 300px;
+   padding: 10px;
+   box-sizing: border-box;
+}
+
+.blue {
+   background-color: #282c6d;
 }
 
 .row {
@@ -30,10 +37,13 @@
    padding-bottom: 100px;
 }
 .newWord.col_right {
+   color: #ccc;
    width: 20%;
    height: 100px;
-   background-color: #0f0;
+   background-color: #21252b;
    float: right;
+   padding: 10px;
+   box-sizing: border-box;
 }   
 .newWord.similarLexemeCols {
    min-height: 100px;
@@ -46,3 +56,7 @@
    width: 30%;
    background-color: #fff;
 }
+.newWord.input-col {
+   background-color: #ccc;
+   padding: 10px;
+}

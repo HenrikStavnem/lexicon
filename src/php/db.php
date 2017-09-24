@@ -114,6 +114,8 @@
 
 			foreach($definitionsArray as $definition) {
 				$definition = trim($definition);
+				$lexemeOutput		= $lex;
+				$nativeOrthography = $lex; // TODO: use override field instead
 				// base output on direction
 				if ($isToLocal) {
 					$lexemeOutput		= $lex;
@@ -149,7 +151,8 @@
 								"usage" 					=> $usage,
 								"example" 				=> $examples,
 								"etymology"				=> $etymology,
-								"irregular"				=> $irregular
+								"irregular"				=> $irregular,
+								"nativeOrthography"	=> $nativeOrthography
 							)
 						)
 					);
@@ -160,13 +163,14 @@
 					//if ($lexemes[$key]["lexClass"] == $class) {
 						array_push($lexemes[$key]["definitions"],
 							array(
-									"lexeme" 			=> $lexemeOutput,
-									"lexClass" 			=> $class,
-									"ipa" 				=> $pronounciation,
-									"usage" 				=> $usage,
-									"example" 			=> $examples,
-									"etymology"			=> $etymology,
-									"irregular"			=> $irregular
+									"lexeme" 				=> $lexemeOutput,
+									"lexClass" 				=> $class,
+									"ipa" 					=> $pronounciation,
+									"usage" 					=> $usage,
+									"example" 				=> $examples,
+									"etymology"				=> $etymology,
+									"irregular"				=> $irregular,
+									"nativeOrthography"	=> $nativeOrthography
 								)
 						);
 					//}

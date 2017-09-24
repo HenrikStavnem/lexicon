@@ -24,6 +24,7 @@ p {
    margin-top: 0px;
    margin-bottom: 0px;
    break-inside: avoid-column;
+	min-width: 300px;
 }
 p:first-letter {
    margin-left: -10px;
@@ -76,6 +77,9 @@ body {
 .class.preposition {
    color: #007DC3;
 }
+.class.number {
+   color: #56b6c2;
+}
 .definition {
    color: #AACA75;
 }

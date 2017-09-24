@@ -10,6 +10,7 @@
 
 		<script type='text/javascript' src='http://code.jquery.com/jquery.min.js' data-cfasync='false'  charset='utf-8'></script>
 		<script type='text/javascript' src='http://code.jquery.com/ui/1.11.3/jquery-ui.js'></script>
+		<script type='text/javascript' src='src/js/wordlist.js'></script>
 		<script type='text/javascript' src='src/js/editLexeme.js'></script>
 		<script type='text/javascript' src='src/js/functions.js'></script>
 
@@ -24,9 +25,15 @@
 		<div id="lexicon-headline"></div>
 
 		<div id='settings'>
-			<input type='checkbox' id='settings-show-abbreviations' class='input-check-listen'>
-				Show abbreviations
-			</input>
+			<input type='checkbox' id='settings-use-abbreviations' class='input-check-listen' />
+			Use abbreviations
+
+			<input type='checkbox' id='settings-show-etymologies' class='input-check-listen' checked='checked' />
+			Show etymologies
+
+			<input type='checkbox' id='settings-show-native-orthography' class='input-check-listen' checked='checked' />
+			Show native orthography
+			
 			<button id='lexicon-direction-button'>Switch Direction</button>
 			<button id='new-word-button'>Init new word</button>
 		</div>
