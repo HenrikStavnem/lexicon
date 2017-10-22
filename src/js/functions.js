@@ -155,6 +155,8 @@ function init(call) {
 		initNewWord();
 	});
 
+	initMenu();
+
 	populateLexiconSelector();
 }
 
@@ -170,18 +172,6 @@ function changeLexiconDirection() {
 	//populateWordlist_OLD();
 }
 
-function populateWordlist_OLD() {
-	console.log("populateWordlist_OLD");
-	getWordlistAsJson(lexiconDirection, "", null, "lexicon");
-	/*
-	if (lexiconDirection == "local") {
-		populateWordListLocal();
-	} else {
-		populateWordlistForeign();
-	}
-	*/
-}
-
 function setSelectedLanguage(val) {
 	$.post( session, {
 		call: "setSelectedLanguage",
@@ -190,33 +180,6 @@ function setSelectedLanguage(val) {
 	.done(
 		function( data ) {
 			console.log("Session says: " + data);
-		}
-	);
-}
-
-function populateLexiconSelector() {
-	var optionsHtml = "";
-	$.post( connection, {
-		call: "getLexiconList"
-	} )
-	.done(
-		function( data ) {
-			console.log("populateLexiconSelector: " + data);
-
-			var lexiconList = JSON.parse(data);
-
-			for (var i in lexiconList) {
-				optionsHtml = optionsHtml + "<option value='" + lexiconList[i].internalName +"'>" + lexiconList[i].namePrefix + lexiconList[i].lexiconName + lexiconList[i].nameSuffix + "</option>";
-			}
-
-			$( "#lexicon-selector" ).html("<select id='select-language'>" + optionsHtml + "</select>");
-
-			$( "#select-language" ).on( "change", function() {
-				var val = $( "#select-language" ).val();
-				setSelectedLanguage(val);
-
-				pop();
-			});
 		}
 	);
 }
@@ -241,11 +204,11 @@ function test() {
 function createLexiconHeadline(conlang, conlangPrefix, conlangSuffix, targetLang) {
 	if (lexiconDirection == 'local') {
 		console.log("headline local");
-		$("#lexicon-headline").html("<h1>" + capitalizeString(targetLang) + " &mdash; <span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + "<span class='langSuffix'>" + conlangSuffix + "</span></h1>");
+		$("#lexicon-headline").html(capitalizeString(targetLang) + " &mdash; <span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + "<span class='langSuffix'>" + conlangSuffix + "</span>");
 	}
 	else {
 		console.log("headline foreign");
-		$("#lexicon-headline").html("<h1><span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + "<span class='langSuffix'>" + conlangSuffix + "</span> &mdash; " + capitalizeString(targetLang) + "</h1>");
+		$("#lexicon-headline").html("<span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + "<span class='langSuffix'>" + conlangSuffix + "</span> &mdash; " + capitalizeString(targetLang));
 	}
 }
 

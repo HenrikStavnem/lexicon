@@ -5,11 +5,13 @@
 
 		<link href='https://fonts.googleapis.com/css?family=Roboto+Slab|Noto+Sans' rel='stylesheet'>
 		<!--<link rel='shortcut icon' href='../../common/icos/specifics/dictionary.ico' />-->
-		<link rel='stylesheet' type='text/css' href='layout.css' />
-		<link rel='stylesheet' type='text/css' href='lexicon-theme-dark.css' />
+		<link rel='stylesheet' type='text/css' href='src/css/menu.css' />
+		<link rel='stylesheet' type='text/css' href='src/css/layout.css' />
+		<link rel='stylesheet' type='text/css' href='src/css/lexicon-theme-dark.css' />
 
 		<script type='text/javascript' src='http://code.jquery.com/jquery.min.js' data-cfasync='false'  charset='utf-8'></script>
 		<script type='text/javascript' src='http://code.jquery.com/ui/1.11.3/jquery-ui.js'></script>
+		<script type='text/javascript' src='src/js/menu.js'></script>
 		<script type='text/javascript' src='src/js/wordlist.js'></script>
 		<script type='text/javascript' src='src/js/editLexeme.js'></script>
 		<script type='text/javascript' src='src/js/functions.js'></script>
@@ -22,7 +24,7 @@
 	</head>
 
 	<body>
-		<div id="lexicon-headline"></div>
+		<div id='menu'></div>
 
 		<div id='settings'>
 			<input type='checkbox' id='settings-use-abbreviations' class='input-check-listen' />
@@ -33,7 +35,7 @@
 
 			<input type='checkbox' id='settings-show-native-orthography' class='input-check-listen' checked='checked' />
 			Show native orthography
-			
+
 			<button id='lexicon-direction-button'>Switch Direction</button>
 			<button id='new-word-button'>Init new word</button>
 		</div>
