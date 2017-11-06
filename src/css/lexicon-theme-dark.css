@@ -1,17 +1,17 @@
 @font-face
 {
 	font-family: 'confont';
-	src: url('res/verdurian.ttf') format('truetype');
+	src: url('../../res/verdurian.ttf') format('truetype');
 }
 
 @font-face
 {
 	font-family: 'cantade';
-	src: url('res/cantade.ttf') format('truetype');
+	src: url('../../res/cantade.ttf') format('truetype');
 }
 
 body {
-   margin: 100px 20px 20px 20px;
+   margin: 80px 20px 20px 20px;
 }
 h1 {
    font-family: 'Roboto Slab', serif;
@@ -63,7 +63,7 @@ body {
    padding-right: 5px;
 }
 .class.noun {
-   color: #E35F48;
+   color: #E35F48;
 }
 .class.verb {
    color: #FBE74C;

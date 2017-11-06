@@ -5,6 +5,7 @@
 	$call 	= $_POST['call'];
 
 	include("db-config.php");
+	include("login.php");
 
 	$mysqli = new mysqli($GLOBALS["db_server"], $GLOBALS["db_user"], $GLOBALS["db_password"], $GLOBALS["db_name"]);
 
@@ -17,6 +18,7 @@
 	$mysqli->set_charset("utf8");
 
 	switch($call) {
+		case "login"								:	login($mysqli);								break;
 		case "getLexiconList"					:	getLexiconList($mysqli); 					break;
 		case "getWordlistLocalSorted"			:	getWordlistSorted($mysqli, true);		break;
 		case "getWordlistForeignSorted"		:	getWordlistSorted($mysqli, false);		break;

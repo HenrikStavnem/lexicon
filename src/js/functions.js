@@ -138,6 +138,8 @@ function init(call) {
 		case "newword"	: initNewWord(); break;
 	}
 
+	initMenu();
+
 	$( ".input-check-listen" ).on( "change", function() {
 
 		useAbbreviations 			= $( "#settings-use-abbreviations" ).is(":checked");
@@ -154,10 +156,8 @@ function init(call) {
 	$( "#new-word-button" ).on( "click", function() {
 		initNewWord();
 	});
-
-	initMenu();
-
-	populateLexiconSelector();
+	
+	populateLexiconPicker();
 }
 
 function changeLexiconDirection() {
@@ -175,7 +175,7 @@ function changeLexiconDirection() {
 function setSelectedLanguage(val) {
 	$.post( session, {
 		call: "setSelectedLanguage",
-		newLang: $( "#select-language" ).val()
+		newLang: val
 	} )
 	.done(
 		function( data ) {
