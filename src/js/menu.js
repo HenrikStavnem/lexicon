@@ -10,19 +10,22 @@ function initMenu() {
 
       <div class='menu-right'>
          <button id='new-word-button'>Init new word</button>
+         <button onClick='createWordEntry()'>Init word entry</button>
+         <button onClick='testWordEntry()'>TEST word entry</button>
          <button onClick='login()' value='Login TEST'>Login test</button>
          <button>Settings</button>
       </div>
 
       <!-- Lexiocn Picker -->
       <div id='lexicon-picker'>
-
-      <input type='text'></input>
       </div>
+
+      <div id='search-field-container'></div>
    `;
 
    $("#menu").html(html);
    $( "#lexicon-picker" ).hide();
+   initSearchField();
 
    $( "#lexicon-picker-btn" ).on( "click", function() {
       toggleLexiconPicker();
@@ -41,7 +44,7 @@ function populateLexiconPicker() {
 			for (var i in lexiconList) {
             // TODO: We need to repopulate this picker when lexicon direction changes
             // and when a new lexicon is added after launch. But for now, let's keep it at this.
-            
+
             // Local to foreign
             if (lexiconDirection === 'local') {
                optionsHtml = optionsHtml + "<div id='lexicon_id_" + i + "' class='lexicon-picker-item' data-value='" + lexiconList[i].internalName + "'>" + lexiconList[i].targetLang + " &mdash; " + lexiconList[i].namePrefix + lexiconList[i].lexiconName + lexiconList[i].nameSuffix + "</div>";

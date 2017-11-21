@@ -1,4 +1,4 @@
-function createEntry(isCantade, lexeme, lexClass, definitions, ipa) {
+function createEntry(lexeme, lexClass, definitions, ipa) {
 	var 	result = "<p>"
 			lexemeClass = lexClass; // TODO: Only if setting is set to abbreviate
 
@@ -33,7 +33,7 @@ function createEntry(isCantade, lexeme, lexClass, definitions, ipa) {
 
 			result = 	result + "<br /><span class='label'> " + number + ":</span> ";
 			result = 	result + " <span class='class " + definitions[i].lexClass + "'>" + lexemeClass + "</span> ";
-			result = 	result + "<span class='definition'>" + definitions[i].lexeme + "</span>";
+			result = 	result + "<span class='definition word-entry' id='word-id-" + definitions[i].lexId + "' '>" + definitions[i].lexeme + "</span>";
 
          if (lexiconDirection == "local" && showNativeOrthography) {
 	         result = 	result + "<span class='native'> " + definitions[i].nativeOrthography + "</span>";
@@ -70,7 +70,7 @@ function createEntry(isCantade, lexeme, lexClass, definitions, ipa) {
 			lexemeClass = abbreviateLexemeClass(lexemeClass)
 		}
 		result = 	result + " <span class='class " + definitions[0].lexClass + "'>" + lexemeClass + "</span> ";
-		result = 	result + "<span class='definition'>" + definitions[0].lexeme + "</span>";
+		result = 	result + "<span class='definition word-entry' id='word-id-" + definitions[0].lexId + "' >" + definitions[0].lexeme + "</span>";
 
       if (lexiconDirection == "local" && showNativeOrthography) {
    		result = 	result + "<span class='native'> " + definitions[0].nativeOrthography + "</span>";
@@ -127,4 +127,12 @@ function abbreviateLexemeClass(lexClass) {
 	}
 
 	return result;
+}
+
+function bindWordlistListerners() {
+	console.log("bindWordlistListerners");
+	$( ".word-entry" ).on( "click", function(event) {
+		var id = event.target.id;
+		console.log(id);
+	});
 }

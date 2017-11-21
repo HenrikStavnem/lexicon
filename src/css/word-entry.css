@@ -1,0 +1,15 @@
+.word-entry-box {
+   color: #222222;
+   background-color: #dddddd;
+   padding: 20px;
+   font-family: 'Roboto Slab', serif;
+   font-size: 14pt;
+}
+.word-entry-tag {
+   display: inline-block;
+   border-radius: 10px;
+   border: 1px solid #cccccc;
+   background-color: #bbbbbb;
+   margin-right: 3px;
+   padding: 3px;
+}

@@ -89,6 +89,7 @@ function populateWordlist(wordlist, destination) {
 
 		for (var j in entries.lexemes[i].definitions) {
 			definitions[j] = {
+				"lexId" 		: entries.lexemes[i].definitions[j].lexId,
 				"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
 				"lexClass" 	: entries.lexemes[i].definitions[j].lexClass,
 				"ipa" 		: entries.lexemes[i].definitions[j].ipa,
@@ -118,7 +119,7 @@ function populateWordlist(wordlist, destination) {
 			currentLetter = entryInitalLetter;
 		}
 
-		html = html + createEntry(false, lexeme, lexClass, definitions);
+		html = html + createEntry(lexeme, lexClass, definitions);
 	}
 
 	html = html + "</div>";
@@ -126,6 +127,7 @@ function populateWordlist(wordlist, destination) {
 	// Show lexicon
 	//setContent(html);
 	populateDestination(html, destination);
+	bindWordlistListerners();
 	setWordcount(wordcount);
 }
 
@@ -156,7 +158,7 @@ function init(call) {
 	$( "#new-word-button" ).on( "click", function() {
 		initNewWord();
 	});
-	
+
 	populateLexiconPicker();
 }
 
@@ -197,6 +199,28 @@ function test() {
 		function( data ) {
 			console.log(data);
 			setContent(data);
+		}
+	);
+}
+
+function testWordEntry() {
+	$.post( connection, {
+		call: "getWordEntry"
+	} )
+	.done(
+		function( data ) {
+			console.log(data);
+		}
+	);
+}
+
+function testLatestWordsAdded() {
+	$.post( connection, {
+		call: "getLatestWordsAdded"
+	} )
+	.done(
+		function( data ) {
+			console.log(data);
 		}
 	);
 }
@@ -249,6 +273,7 @@ function populateWordListLocal() {
 
 				var lexeme			= entries.lexemes[i].lexeme;
 				var lexClass 		= entries.lexemes[i].lexClass;
+				var lexId 			= entries.lexemes[i].lexId;
 				var definitions	= Array();
 
 				var entryInitalLetter = getInitialLetter(lexeme);
@@ -283,7 +308,7 @@ function populateWordListLocal() {
 					currentLetter = entryInitalLetter;
 				}
 
-				html = html + createEntry(false, lexeme, lexClass, definitions);
+				html = html + createEntry(lexeme, lexClass, definitions);
 			}
 
 			// Show lexicon

@@ -19,9 +19,14 @@
 
 	switch($call) {
 		case "login"								:	login($mysqli);								break;
+
+		case "getWordEntry"						:	getWordEntry($mysqli); 						break;
+		case "getLatestWordsAdded"				:	getLatestWordsAdded($mysqli);				break;
 		case "getLexiconList"					:	getLexiconList($mysqli); 					break;
 		case "getWordlistLocalSorted"			:	getWordlistSorted($mysqli, true);		break;
 		case "getWordlistForeignSorted"		:	getWordlistSorted($mysqli, false);		break;
+
+		case "saveNewWord"						:	saveNewWord($mysqli);						break;
 	}
 
 	function getWordlistSorted($mysqli, $isToLocal) {
@@ -82,7 +87,7 @@
 		$stmt = $mysqli->prepare("
 			SELECT
 				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
-				etymology, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new, examples
+				etymology, irregular, word_usage, note, new, examples
 			FROM
 				$table
 			$lookupSql
@@ -90,9 +95,16 @@
 				definition, class, word ASC
 		");
 
+		/*
+			REMOVED FROM QUERY:
+			verb_conjugation, pronoun_subclass
+
+			$verbConjugation, $pronounSubclass,
+		*/
+
 		$stmt->execute();
 		$stmt->store_result();
-		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $verbConjugation, $pronounSubclass, $usage, $note, $new, $examples);
+		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $usage, $note, $new, $examples);
 
 		$result = array();
 		$lexemes = array();
@@ -147,6 +159,7 @@
 						//"lexClass" 				=> $class,
 						"definitions"			=> array(
 							"0"						=> array(
+								"lexId"					=> $id,
 								"lexeme" 				=> $lexemeOutput,
 								"lexClass" 				=> $class,
 								"ipa" 					=> $pronounciation,
@@ -165,6 +178,7 @@
 					//if ($lexemes[$key]["lexClass"] == $class) {
 						array_push($lexemes[$key]["definitions"],
 							array(
+									"lexId"					=> $id,
 									"lexeme" 				=> $lexemeOutput,
 									"lexClass" 				=> $class,
 									"ipa" 					=> $pronounciation,
@@ -244,6 +258,63 @@
 	 	}
 
 		echo json_encode($lexiconList);
+	}
+
+	function getWordEntry($mysqli) {
+		$stmt = $mysqli->prepare("
+			SELECT
+				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
+				etymology_new, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new, examples
+			FROM
+				cantade
+			WHERE
+				id = 1
+			ORDER BY
+				definition, class, word ASC
+			LIMIT 1
+		");
+
+		$stmt->execute();
+		$stmt->store_result();
+		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $verbConjugation, $pronounSubclass, $usage, $note, $new, $examples);
+
+		while($row = $stmt->fetch()) {
+			echo getWordEntryEtymology($etymology);
+		}
+	}
+
+	function getWordEntryEtymology($string) {
+		$result = $string;
+
+		return $result;
+	}
+
+	function getLatestWordsAdded($mysqli) {
+		$lexemes = array();
+		// TODO change hardcoded language selection
+		$stmt = $mysqli->prepare("
+			SELECT
+				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
+				etymology_new, irregular, verb_conjugation, pronoun_subclass, word_usage, note, new, examples, time_added
+			FROM
+				cantade
+			ORDER BY
+				time_added ASC
+			LIMIT 10
+		");
+
+		$stmt->execute();
+		$stmt->store_result();
+		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $verbConjugation, $pronounSubclass, $usage, $note, $new, $examples, $timeAdded);
+
+		while($row = $stmt->fetch()) {
+			echo "$lex<br />"; // TODO change to JSON
+		}
+		//echo json_encode($lexemes, JSON_FORCE_OBJECT);
+	}
+
+	function saveNewWord($mysqli) {
+
 	}
 
 	// Auxiliary functions

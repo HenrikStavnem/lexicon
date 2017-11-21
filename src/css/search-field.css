@@ -1,0 +1,15 @@
+.search-field {
+   width: 200px;
+   height: 40px;
+   font-family: 'Roboto Slab', serif;
+   font-size: 16pt;
+   line-height: 40px;
+   color: #000000;
+   background-color: #ffffff;
+   border: none;
+   border-radius: 10px;
+   padding-left: 10px;
+   padding-right: 10px;
+   outline-width: 0;
+   margin: 5px;
+}
