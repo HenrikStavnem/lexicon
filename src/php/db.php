@@ -26,6 +26,8 @@
 		case "getWordlistLocalSorted"			:	getWordlistSorted($mysqli, true);		break;
 		case "getWordlistForeignSorted"		:	getWordlistSorted($mysqli, false);		break;
 
+		case "newWordlist"						:	newWordlist($mysqli, false);				break;
+
 		case "saveNewWord"						:	saveNewWord($mysqli);						break;
 	}
 
@@ -336,45 +338,69 @@
 		return array_pop($args);
 	}
 
-	function make_comparer() {
-		// Normalize criteria up front so that the comparer finds everything tidy
-		$criteria = func_get_args();
-			foreach ($criteria as $index => $criterion) {
-					$criteria[$index] = is_array($criterion)
-					? array_pad($criterion, 3, null)
-					: array($criterion, SORT_ASC, null);
+	function newWordlist($mysqli) {
+		$stmt = $mysqli->prepare("
+			SELECT
+				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
+				etymology, irregular, word_usage, note, new, examples
+			FROM
+				test
+			ORDER BY
+				word, class, definition ASC
+		");
+
+		$stmt->execute();
+		$stmt->store_result();
+		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $usage, $note, $new, $examples);
+
+		$result = array();
+		$lexemes = array();
+
+		while($row = $stmt->fetch()) {
+			$arrayKey = -1;
+			$classMatch = false;
+
+			foreach ($lexemes as $keyId => $value) {
+				if ($value['lexeme'] == $lex) {
+					if ($value['lexClass'] === $class) {
+						/**
+							Maybe add check for etymology like with class
+						*/
+
+						$classMatch = true;
+						$arrayKey = $keyId;
+					}
 				}
+			}
 
-			return function($first, $second) use (&$criteria) {
-				foreach ($criteria as $criterion) {
-					// How will we compare this round?
-					list($column, $sortOrder, $projection) = $criterion;
-					$sortOrder = $sortOrder === SORT_DESC ? -1 : 1;
+			if ($classMatch === true) {
+				array_push($lexemes[$arrayKey]["definitions"], array(
+						"lexeme" 				=> $definitionAsIs
+					)
+				);
+			}
+			else {
+				$lexemes[] = array(
+					"lexeme" 				=> $lex,
+					"lexClass" 				=> $class,
+					"lexId"					=> $id,
+					"definitions"			=> array(
+						"0"						=> array(
+							"lexeme" 				=> $definitionAsIs
+						)
+					)
+				);
+			}
+		}
 
-					// If a projection was defined project the values now
-					if ($projection) {
-						$lhs = call_user_func($projection, $first[$column]);
-						$rhs = call_user_func($projection, $second[$column]);
-					}
-					else {
-						$lhs = $first[$column];
-						$rhs = $second[$column];
-					}
+		$result = array(
+	         "conlang" => "TEST",//$conlangName,
+	         //"conlangPrefix" => $conlangPrefix,
+	         //"conlangSuffix" => $conlangSuffix,
+	         //"targetLang" => $targetLang,
+	         "lexemes" => $lexemes
+	      );
 
-					// Do the actual comparison; do not return if equal
-					if ($lhs < $rhs) {
-						return -1 * $sortOrder;
-					}
-					else if ($lhs > $rhs) {
-						return 1 * $sortOrder;
-					}
-				}
-
-			return 0; // tiebreakers exhausted, so $first == $second
-		};
-	}
-
-	function method1($a,$b) {
-		return ($a[2]["lexemes"]["lexeme"] <= $b[2]["lexemes"]["lexeme"]) ? -1 : 1;
+		echo json_encode($lexemes, JSON_FORCE_OBJECT);
 	}
 ?>

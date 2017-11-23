@@ -359,3 +359,17 @@ function capitalizeString(string) {
 
 // URL manipulation for later use:
 // window.history.pushState("object or string", "Title", "/new-url");
+
+function newWordlist() {
+	$.post( connection, {
+		call: "newWordlist",
+		lookup: ""
+	} )
+    .done(
+		function( data ) {
+			console.log(data);
+			var wordlist = JSON.parse(data);
+			console.log(wordlist);
+		}
+	);
+}
