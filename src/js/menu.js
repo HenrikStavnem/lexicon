@@ -9,6 +9,7 @@ function initMenu() {
       </div>
 
       <div class='menu-right'>
+         <button onClick='newWordlist()'>NEW WORDLIST</button>
          <button id='new-word-button'>Init new word</button>
          <button onClick='createWordEntry()'>Init word entry</button>
          <button onClick='testWordEntry()'>TEST word entry</button>

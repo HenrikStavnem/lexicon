@@ -26,7 +26,8 @@
 		case "getWordlistLocalSorted"			:	getWordlistSorted($mysqli, true);		break;
 		case "getWordlistForeignSorted"		:	getWordlistSorted($mysqli, false);		break;
 
-		case "newWordlist"						:	newWordlist($mysqli, false);				break;
+
+		case "newWordlist"						:	newWordlist($mysqli, true);				break;
 
 		case "saveNewWord"						:	saveNewWord($mysqli);						break;
 	}
@@ -338,69 +339,150 @@
 		return array_pop($args);
 	}
 
-	function newWordlist($mysqli) {
+	function newWordlist($mysqli, $isToLocal) {
+		/*
+		$conlangName = "CONLANG";
+		$conlangPrefix = "Pre";
+		$conlangSuffix = "Suf";
+		*/
+
+		$lookup = "";
+		$lookupSql = "";
+		if (isset($_POST['lookup'])) {
+			$lookup = $_POST['lookup'];
+		}
+		if ($lookup !== "") {
+			if ($isToLocal) {
+				$lookupSql = "WHERE definition = '$lookup'";
+			}
+			else {
+				$lookupSql = "WHERE word = '$lookup'";
+			}
+		}
+		else {
+			//$lookupSql = "WHERE definition = 'have'"; // TEST ONLY
+		}
+
+		if (isset($_SESSION["selectedLang"])) {
+			$selectedLanguage = $_SESSION["selectedLang"];
+		}
+		else {
+			$selectedLanguage = "cantade"; // TODO: Change this to first language
+		}
+
+		$stmtConlang = $mysqli->prepare("
+			SELECT
+				lang_id, lang_prefix, lang_name, lang_suffix, lang_target_lang, lang_internal_name
+			FROM
+				lexicon_langs
+			WHERE
+				lang_internal_name = ?
+			LIMIT
+				1
+		");
+
+		$stmtConlang->bind_param('s', $selectedLanguage);
+		$stmtConlang->execute();
+		$stmtConlang->store_result();
+		$stmtConlang->bind_result($id, $prefix, $conlang, $suffix, $targetLang, $internalName);
+
+		while($row = $stmtConlang->fetch()) {
+			$conlangName 	= $conlang;
+			$conlangPrefix = $prefix;
+			$conlangSuffix = $suffix;
+			$targetLang		= $targetLang;
+			$table 			= $internalName;
+		}
+
+		// REMOVE WHEN DONE TESTING
+		//$table = "test";
+
 		$stmt = $mysqli->prepare("
 			SELECT
 				id, word, word_clarification, class, definition, definition_clarification, pronounciation,
 				etymology, irregular, word_usage, note, new, examples
 			FROM
-				test
-			ORDER BY
-				word, class, definition ASC
+				$table
 		");
 
 		$stmt->execute();
 		$stmt->store_result();
-		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitionAsIs, $definitionClarification, $pronounciation, $etymology, $irregular, $usage, $note, $new, $examples);
+		$stmt->bind_result($id, $lex, $lexClarification, $class, $definitions, $definitionClarification, $pronounciation, $etymology, $irregular, $usage, $note, $new, $examples);
 
 		$result = array();
 		$lexemes = array();
 
 		while($row = $stmt->fetch()) {
 			$arrayKey = -1;
-			$classMatch = false;
+			$match = false;
 
-			foreach ($lexemes as $keyId => $value) {
-				if ($value['lexeme'] == $lex) {
-					if ($value['lexClass'] === $class) {
-						/**
-							Maybe add check for etymology like with class
-						*/
+			if ($isToLocal) {
+				$definitionOutput = $definitions;
 
-						$classMatch = true;
-						$arrayKey = $keyId;
+				$lexemesArray[0] = $lex;
+			}
+			else
+			{
+				$definitionOutput 	= $lex;
+
+				$lexemesArray = explode(",", $definitions);
+				$lexemesArray = array_map('trim', $lexemesArray); // remove spaces
+				sort($lexemesArray);
+			}
+
+			foreach ($lexemesArray as $definitionId => $lexemeOutput) {
+
+				foreach ($lexemes as $keyId => $value) {
+					if ($value['lexeme'] === $lexemeOutput) {
+						if ($value['lexClass'] === $class) {
+							/**
+								Maybe add check for etymology like with class
+							*/
+
+							$match = true;
+							$arrayKey = $keyId;
+						}
 					}
 				}
-			}
 
-			if ($classMatch === true) {
-				array_push($lexemes[$arrayKey]["definitions"], array(
-						"lexeme" 				=> $definitionAsIs
-					)
-				);
-			}
-			else {
-				$lexemes[] = array(
-					"lexeme" 				=> $lex,
-					"lexClass" 				=> $class,
-					"lexId"					=> $id,
-					"definitions"			=> array(
-						"0"						=> array(
-							"lexeme" 				=> $definitionAsIs
+				if ($match === true) {
+					array_push($lexemes[$arrayKey]["definitions"], array(
+							"lexeme" 				=> $definitionOutput,
+							"lexemeIpa"				=> $pronounciation,
+							"usage"					=> $usage,
+							"examples"				=> $examples
 						)
-					)
-				);
+					);
+				}
+				else {
+					$lexemes[] = array(
+						"lexeme" 				=> $lexemeOutput,
+						"lexClass" 				=> $class,
+						"lexId"					=> $id,
+						"lexemeIpa"				=> $pronounciation,
+						"definitions"			=> array(
+							"0"						=> array(
+								"lexeme" 				=> $definitionOutput,
+								"lexemeIpa"				=> $pronounciation,
+								"usage"					=> $usage,
+								"examples"				=> $examples
+							)
+						)
+					);
+				}
 			}
 		}
 
+		$lexemes = array_orderby($lexemes, 'lexeme');
+
 		$result = array(
-	         "conlang" => "TEST",//$conlangName,
-	         //"conlangPrefix" => $conlangPrefix,
-	         //"conlangSuffix" => $conlangSuffix,
-	         //"targetLang" => $targetLang,
+	         "conlang" => $conlangName,
+	         "conlangPrefix" => $conlangPrefix,
+	         "conlangSuffix" => $conlangSuffix,
+	         "targetLang" => $targetLang,
 	         "lexemes" => $lexemes
 	      );
 
-		echo json_encode($lexemes, JSON_FORCE_OBJECT);
+		echo json_encode($result, JSON_FORCE_OBJECT);
 	}
 ?>

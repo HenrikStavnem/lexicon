@@ -1,3 +1,74 @@
+function createEntryNew(lexemeEntry) {
+	//debugger;
+	var 	result = "<p>",
+			lexeme				= lexemeEntry.lexeme,
+			lexemeId				= lexemeEntry.lexemeId,
+			lexemeClass 		= lexemeEntry.lexClass,
+			lexemeIpa 			= lexemeEntry.lexemeIpa,
+			definitions			= lexemeEntry.definitions,
+			nativeOrthography	= lexemeEntry.nativeOrthography,
+			isDefinitionsMany = false;
+
+	// convert definitions object to Array
+	var definitions = Object.values(definitions);
+
+	result = result + "<span class='lexeme'>" + lexeme + "</span>";
+
+	if (lexiconDirection == "foreign") {
+		result = result + "<span class='native'> " + lexeme + "</span>";
+
+		if (lexemeIpa !== "" && lexemeIpa !== undefined) {
+			//result = 	result + " <span class='ipa'>[" + replaceAll(lexemeIpa, ":", "&#x2D0;") + "]</span>";
+			result = 	result + " <span class='ipa'>[" + lexemeIpa + "]</span>";
+		}
+	}
+
+	result = result + " <span class='class " + lexemeClass + "'>" + lexemeClass + "</span> ";
+
+	if (definitions.length === 1) {
+		//result = result + " (kun éen du)";
+	} else {
+		//result = result + " (ja da større end 1 baby)";
+		isDefinitionsMany = true;
+	}
+
+	for (var i in definitions) {
+		result = result + createEntryDefinition(definitions[i], isDefinitionsMany, i, lexemeId);
+	}
+
+	result = 	result + "</p>";
+	return result;
+}
+
+function createEntryDefinition(definition, isDefinitionsMany, index, lexemeId) {
+	var result = "",
+		 number = (parseInt(index) + 1);
+
+	if (isDefinitionsMany) {
+		result = result + "<br /><span class='label'> " + number + ":</span> ";
+	}
+
+	result = result + "<span class='definition word-entry' id='word-id-" + lexemeId + "' '>" + definition.lexeme + "</span>"
+
+	if (lexiconDirection === "local") {
+		result = result + "<span class='native'> " + definition.lexeme + "</span>";
+		if (definition.lexemeIpa !== "" && definition.lexemeIpa !== undefined) {
+			result = 	result + " <span class='ipa'>[" + definition.lexemeIpa + "]</span>";
+		}
+	}
+
+	if (definition.usage !== "") {
+		result = 	result + "<br /><span class='usage'>" + definition.usage + "</span>";
+	}
+
+	if (definition.examples !== "") {
+		result = 	result + "<br><span class='label'>Phrases:</span> ";
+		result = 	result + "<span class='usage'>" + definition.examples + "</span>";
+	}
+
+	return result; //"<br />" + definition.lexeme;;
+}
+
 function createEntry(lexeme, lexClass, definitions, ipa) {
 	var 	result = "<p>"
 			lexemeClass = lexClass; // TODO: Only if setting is set to abbreviate

@@ -99,8 +99,10 @@ body {
    color: #AAAAAA;
 }
 .native {
-   font-family: 'confont', sans-serif;
+   font-family: 'cantade', sans-serif;
    color: #77A2C4;
+	text-transform: uppercase;
+	font-size: 8pt;
 	/* BELOW ARE FOR TEST PURPOSES */
 	/*
 	font-family: 'cantade', sans-serif;

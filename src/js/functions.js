@@ -236,88 +236,6 @@ function createLexiconHeadline(conlang, conlangPrefix, conlangSuffix, targetLang
 	}
 }
 
-function populateWordListLocal() {
-	//console.log("populateWordListLocal");
-	setContent("<h1>Fetching data...</h1>");
-
-	$.post( connection, {
-		call: "getWordlistLocalSorted",
-		lookup: ""
-	} )
-    .done(
-		function( data ) {
-			console.log(data);
-			var html = "";
-			var currentLetter = "";
-			var previousLexeme = "";
-			var numbers = ["0", "1", "2", "3", "4" ,"5", "6", "7", "8" , "9"];
-			var wordcount = 0;
-
-			if(data) {
-				try {
-					var entries = JSON.parse(data);
-				}
-				catch(e) {
-					setContent(e + ": " + data);
-					return;
-				}
-			}
-
-			console.log(entries.conlang);
-			createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
-
-			// Create headline
-
-			for (var i in entries.lexemes) {
-				wordcount++;
-
-				var lexeme			= entries.lexemes[i].lexeme;
-				var lexClass 		= entries.lexemes[i].lexClass;
-				var lexId 			= entries.lexemes[i].lexId;
-				var definitions	= Array();
-
-				var entryInitalLetter = getInitialLetter(lexeme);
-				var isNumber = jQuery.inArray(entryInitalLetter, numbers) !== -1;
-
-				for (var j in entries.lexemes[i].definitions) {
-					definitions[j] = {
-						"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
-						"ipa" 		: entries.lexemes[i].definitions[j].ipa,
-						"usage" 		: entries.lexemes[i].definitions[j].usage,
-						"example" 	: entries.lexemes[i].definitions[j].example,
-						"etymology" : entries.lexemes[i].definitions[j].etymology,
-						"irregular" : entries.lexemes[i].definitions[j].irregular
-					}
-				}
-
-				if (currentLetter != entryInitalLetter) {
-					if( !isNumber ) { // isNumber false
-						if (entryInitalLetter != "") {
-							currentLetter = entryInitalLetter;
-							html = html + createHeadline(entryInitalLetter);
-						}
-					}
-					else {
-						if (currentLetter != "#") {
-							currentLetter = "#";
-							html = html + createHeadline("#");
-						}
-					}
-				}
-				else {
-					currentLetter = entryInitalLetter;
-				}
-
-				html = html + createEntry(lexeme, lexClass, definitions);
-			}
-
-			// Show lexicon
-			setContent(html);
-			setWordcount(wordcount);
-		}
-	);
-}
-
 function setContent(value) {
 	$("#container").html(value);
 }
@@ -368,8 +286,73 @@ function newWordlist() {
     .done(
 		function( data ) {
 			console.log(data);
-			var wordlist = JSON.parse(data);
-			console.log(wordlist);
+			var entries = JSON.parse(data);
+			console.log(entries);
+
+			populateWordListLocalNew(entries);
 		}
 	);
+}
+
+function populateWordListLocalNew(entries) {
+	var html = "<div class='lexicon'>",
+		 currentLetter = "",
+		 previousLexeme = "",
+		 numbers = ["0", "1", "2", "3", "4" ,"5", "6", "7", "8" , "9"],
+		 wordcount = 0;
+
+	console.log(entries.conlang);
+	createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
+
+	// Create headline
+
+	for (var i in entries.lexemes) {
+		wordcount++;
+
+		var lexemeEntry	= entries.lexemes[i];
+		//var lexemeOld		= entries.lexemes[i].lexeme;
+		var lexClass 		= entries.lexClass;
+		var lexId 			= entries.lexId;
+		var definitions	= Array();
+
+		var entryInitalLetter = getInitialLetter(entries.lexemes[i].lexeme);
+		var isNumber = jQuery.inArray(entryInitalLetter, numbers) !== -1;
+
+		for (var j in entries.lexemes[i].definitions) {
+			definitions[j] = {
+				"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
+				"ipa" 		: entries.lexemes[i].definitions[j].ipa,
+				"usage" 		: entries.lexemes[i].definitions[j].usage,
+				"example" 	: entries.lexemes[i].definitions[j].example,
+				"etymology" : entries.lexemes[i].definitions[j].etymology,
+				"irregular" : entries.lexemes[i].definitions[j].irregular
+			}
+		}
+
+		if (currentLetter != entryInitalLetter) {
+			if( !isNumber ) { // isNumber false
+				if (entryInitalLetter != "") {
+					currentLetter = entryInitalLetter;
+					html = html + createHeadline(entryInitalLetter);
+				}
+			}
+			else {
+				if (currentLetter != "#") {
+					currentLetter = "#";
+					html = html + createHeadline("#");
+				}
+			}
+		}
+		else {
+			currentLetter = entryInitalLetter;
+		}
+		html = html + createEntryNew(lexemeEntry);
+	}
+
+	html = html + "</div>";
+
+	// Show lexicon
+	populateDestination(html, "lexicon"); //destination = destination
+	bindWordlistListerners();
+	setWordcount(wordcount);
 }
