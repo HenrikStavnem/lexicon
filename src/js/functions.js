@@ -27,9 +27,11 @@ function getWordlistAsJson(lexiconDirection, lookup, newWord, callback) {
 	} )
     .done(
 		function( data, wordlist ) {
-			wordlist = data;
+			// TODO: What is the point of "wordlist?". It yields "success" from the DB. Why? What was it supposed to do?
 
-			console.log(data);
+			wordlist = JSON.parse(data);;
+
+			//console.log(data);
 
 			getWordlistCallback(wordlist, callback);
 		}
@@ -38,9 +40,9 @@ function getWordlistAsJson(lexiconDirection, lookup, newWord, callback) {
 
 function getWordlistCallback(wordlist, callback) {
 	switch (callback) {
-		case "lexicon": 				populateWordlist(wordlist, "lexicon"); 			break;
-		case "preview-local": 		populateWordlist(wordlist, "preview-local"); 	break;
-		case "preview-foreign": 	populateWordlist(wordlist, "preview-foreign");	break;
+		case "lexicon": 				populateWordList(wordlist, "lexicon"); 			break;
+		case "preview-local": 		populateWordList(wordlist, "preview-local"); 	break;
+		case "preview-foreign": 	populateWordList(wordlist, "preview-foreign");	break;
 	}
 }
 
@@ -51,84 +53,6 @@ function populateDestination(html, destination) {
 		case "preview-local": 		setLocalPreview(html);		break;
 		case "preview-foreign": 	setForeignPreview(html);	break;
 	}
-}
-
-function populateWordlist(wordlist, destination) {
-	console.log("populateWordList");
-	//console.log(wordlist);
-	var html = "<div class='lexicon'>";
-	var currentLetter = "";
-	var previousLexeme = "";
-	var numbers = ["0", "1", "2", "3", "4" ,"5", "6", "7", "8" , "9"];
-	var wordcount = 0;
-
-	if(wordlist) {
-		try {
-			var entries = JSON.parse(wordlist);
-		}
-		catch(e) {
-			setContent(e + ": " + wordlist);
-			return;
-		}
-	}
-
-	console.log(entries.conlang);
-	createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
-
-	// Create headline
-
-	for (var i in entries.lexemes) {
-		wordcount++;
-
-		var lexeme			= entries.lexemes[i].lexeme;
-		var lexClass 		= entries.lexemes[i].lexClass;
-		var definitions	= Array();
-
-		var entryInitalLetter = getInitialLetter(lexeme);
-		var isNumber = jQuery.inArray(entryInitalLetter, numbers) !== -1;
-
-		for (var j in entries.lexemes[i].definitions) {
-			definitions[j] = {
-				"lexId" 		: entries.lexemes[i].definitions[j].lexId,
-				"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
-				"lexClass" 	: entries.lexemes[i].definitions[j].lexClass,
-				"ipa" 		: entries.lexemes[i].definitions[j].ipa,
-				"usage" 		: entries.lexemes[i].definitions[j].usage,
-				"example" 	: entries.lexemes[i].definitions[j].example,
-				"etymology" : entries.lexemes[i].definitions[j].etymology,
-				"irregular" : entries.lexemes[i].definitions[j].irregular,
-				"nativeOrthography" : entries.lexemes[i].definitions[j].nativeOrthography
-			}
-		}
-
-		if (currentLetter != entryInitalLetter) {
-			if( !isNumber ) { // isNumber false
-				if (entryInitalLetter != "") {
-					currentLetter = entryInitalLetter;
-					html = html + createHeadline(entryInitalLetter);
-				}
-			}
-			else {
-				if (currentLetter != "#") {
-					currentLetter = "#";
-					html = html + createHeadline("#");
-				}
-			}
-		}
-		else {
-			currentLetter = entryInitalLetter;
-		}
-
-		html = html + createEntry(lexeme, lexClass, definitions);
-	}
-
-	html = html + "</div>";
-
-	// Show lexicon
-	//setContent(html);
-	populateDestination(html, destination);
-	bindWordlistListerners();
-	setWordcount(wordcount);
 }
 
 function init(call) {
@@ -225,17 +149,6 @@ function testLatestWordsAdded() {
 	);
 }
 
-function createLexiconHeadline(conlang, conlangPrefix, conlangSuffix, targetLang) {
-	if (lexiconDirection == 'local') {
-		console.log("headline local");
-		$("#lexicon-headline").html(capitalizeString(targetLang) + " &mdash; <span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + "<span class='langSuffix'>" + conlangSuffix + "</span>");
-	}
-	else {
-		console.log("headline foreign");
-		$("#lexicon-headline").html("<span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + "<span class='langSuffix'>" + conlangSuffix + "</span> &mdash; " + capitalizeString(targetLang));
-	}
-}
-
 function setContent(value) {
 	$("#container").html(value);
 }
@@ -277,82 +190,3 @@ function capitalizeString(string) {
 
 // URL manipulation for later use:
 // window.history.pushState("object or string", "Title", "/new-url");
-
-function newWordlist() {
-	$.post( connection, {
-		call: "newWordlist",
-		lookup: ""
-	} )
-    .done(
-		function( data ) {
-			console.log(data);
-			var entries = JSON.parse(data);
-			console.log(entries);
-
-			populateWordListLocalNew(entries);
-		}
-	);
-}
-
-function populateWordListLocalNew(entries) {
-	var html = "<div class='lexicon'>",
-		 currentLetter = "",
-		 previousLexeme = "",
-		 numbers = ["0", "1", "2", "3", "4" ,"5", "6", "7", "8" , "9"],
-		 wordcount = 0;
-
-	console.log(entries.conlang);
-	createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
-
-	// Create headline
-
-	for (var i in entries.lexemes) {
-		wordcount++;
-
-		var lexemeEntry	= entries.lexemes[i];
-		//var lexemeOld		= entries.lexemes[i].lexeme;
-		var lexClass 		= entries.lexClass;
-		var lexId 			= entries.lexId;
-		var definitions	= Array();
-
-		var entryInitalLetter = getInitialLetter(entries.lexemes[i].lexeme);
-		var isNumber = jQuery.inArray(entryInitalLetter, numbers) !== -1;
-
-		for (var j in entries.lexemes[i].definitions) {
-			definitions[j] = {
-				"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
-				"ipa" 		: entries.lexemes[i].definitions[j].ipa,
-				"usage" 		: entries.lexemes[i].definitions[j].usage,
-				"example" 	: entries.lexemes[i].definitions[j].example,
-				"etymology" : entries.lexemes[i].definitions[j].etymology,
-				"irregular" : entries.lexemes[i].definitions[j].irregular
-			}
-		}
-
-		if (currentLetter != entryInitalLetter) {
-			if( !isNumber ) { // isNumber false
-				if (entryInitalLetter != "") {
-					currentLetter = entryInitalLetter;
-					html = html + createHeadline(entryInitalLetter);
-				}
-			}
-			else {
-				if (currentLetter != "#") {
-					currentLetter = "#";
-					html = html + createHeadline("#");
-				}
-			}
-		}
-		else {
-			currentLetter = entryInitalLetter;
-		}
-		html = html + createEntryNew(lexemeEntry);
-	}
-
-	html = html + "</div>";
-
-	// Show lexicon
-	populateDestination(html, "lexicon"); //destination = destination
-	bindWordlistListerners();
-	setWordcount(wordcount);
-}

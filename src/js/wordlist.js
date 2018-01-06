@@ -1,4 +1,66 @@
-function createEntryNew(lexemeEntry) {
+function populateWordList(entries, destination) {
+	var html = "<div class='lexicon'>",
+		 currentLetter = "",
+		 previousLexeme = "",
+		 numbers = ["0", "1", "2", "3", "4" ,"5", "6", "7", "8" , "9"],
+		 wordcount = 0;
+
+	//createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
+
+	// Create headline
+	createLexiconHeadline(entries.conlang, entries.conlangPrefix, entries.conlangSuffix, entries.targetLang);
+
+	for (var i in entries.lexemes) {
+		wordcount++;
+
+		var lexemeEntry	= entries.lexemes[i],
+		lexemeOld			= entries.lexemes[i].lexeme,
+		lexClass 			= entries.lexClass,
+		lexId 				= entries.lexId,
+		definitions			= Array(),
+		entryInitalLetter = getInitialLetter(entries.lexemes[i].lexeme),
+		isNumber 			= jQuery.inArray(entryInitalLetter, numbers) !== -1;
+
+		for (var j in entries.lexemes[i].definitions) {
+			definitions[j] = {
+				"lexeme" 	: entries.lexemes[i].definitions[j].lexeme,
+				"ipa" 		: entries.lexemes[i].definitions[j].ipa,
+				"usage" 		: entries.lexemes[i].definitions[j].usage,
+				"example" 	: entries.lexemes[i].definitions[j].example,
+				"etymology" : entries.lexemes[i].definitions[j].etymology,
+				"irregular" : entries.lexemes[i].definitions[j].irregular
+			}
+		}
+
+		if (currentLetter != entryInitalLetter) {
+			if( !isNumber ) { // isNumber false
+				if (entryInitalLetter != "") {
+					currentLetter = entryInitalLetter;
+					html = html + createHeadline(entryInitalLetter);
+				}
+			}
+			else {
+				if (currentLetter != "#") {
+					currentLetter = "#";
+					html = html + createHeadline("#");
+				}
+			}
+		}
+		else {
+			currentLetter = entryInitalLetter;
+		}
+		html = html + createEntry(lexemeEntry);
+	}
+
+	html = html + "</div>";
+
+	// Show lexicon
+	populateDestination(html, destination);
+	bindWordlistListerners();
+	setWordcount(wordcount);
+}
+
+function createEntry(lexemeEntry) {
 	//debugger;
 	var 	result = "<p>",
 			lexeme				= lexemeEntry.lexeme,
@@ -67,112 +129,6 @@ function createEntryDefinition(definition, isDefinitionsMany, index, lexemeId) {
 	}
 
 	return result; //"<br />" + definition.lexeme;;
-}
-
-function createEntry(lexeme, lexClass, definitions, ipa) {
-	var 	result = "<p>"
-			lexemeClass = lexClass; // TODO: Only if setting is set to abbreviate
-
-	if (useAbbreviations) {
-		lexemeClass = abbreviateLexemeClass(lexClass)
-	}
-
-	//ipa = replaceAll("noget med : som er smart", ":", "&#x2D0;");
-	ipa = replaceAll("noget med : som er smart", ":", "cool");
-	//console.log(ipa);
-
-	// &#x2D0;
-
-	result = 	result + "<span class='lexeme'>" + lexeme + "</span>";
-
-   if (lexiconDirection == "foreign") {
-      result = 	result + "<span class='native'> " + definitions[0].nativeOrthography + "</span>";
-      if (definitions[0].ipa != "") {
-			result = 	result + " <span class='ipa'>[" + replaceAll(definitions[0].ipa, ":", "&#x2D0;") + "]</span>";
-		}
-   }
-	//result = 	result + " <span class='class " + lexClass + "'>" + lexemeClass + "</span> ";
-
-	if (definitions.length > 1)
-	{
-		for (var i in definitions) {
-			var number = (parseInt(i) + 1);
-			var lexemeClass =  definitions[i].lexClass;
-			if (useAbbreviations) {
-				lexemeClass = abbreviateLexemeClass(lexemeClass)
-			}
-
-			result = 	result + "<br /><span class='label'> " + number + ":</span> ";
-			result = 	result + " <span class='class " + definitions[i].lexClass + "'>" + lexemeClass + "</span> ";
-			result = 	result + "<span class='definition word-entry' id='word-id-" + definitions[i].lexId + "' '>" + definitions[i].lexeme + "</span>";
-
-         if (lexiconDirection == "local" && showNativeOrthography) {
-	         result = 	result + "<span class='native'> " + definitions[i].nativeOrthography + "</span>";
-         }
-
-			if (definitions[i].irregular) {
-				result = 	result + "* ";
-			} else {
-				result = 	result + " ";
-			}
-
-			if (definitions[i].ipa != "" && lexiconDirection == "local") {
-				result = 	result + "<span class='ipa'>[" + replaceAll(definitions[i].ipa, ":", "&#x2D0;") + "]</span>";
-			}
-
-			if (definitions[i].usage != "") {
-				result = 	result + "<br /><span class='usage'>" + definitions[i].usage + "</span>";
-			}
-
-			if (definitions[i].example != "") {
-				result = 	result + "<br><span class='label'>Phrases:</span> ";
-				result = 	result + "<span class='usage'>" + definitions[i].example + "</span>";
-			}
-
-			if (definitions[i].etymology != "" && showEtymologies) {
-				result = 	result + "<br><span class='label'>Etymology:</span>";
-				result = 	result + "<span class='etymology'>" + definitions[i].etymology + "</span>";
-			}
-		}
-	}
-	else {
-		var lexemeClass =  definitions[0].lexClass;
-		if (useAbbreviations) {
-			lexemeClass = abbreviateLexemeClass(lexemeClass)
-		}
-		result = 	result + " <span class='class " + definitions[0].lexClass + "'>" + lexemeClass + "</span> ";
-		result = 	result + "<span class='definition word-entry' id='word-id-" + definitions[0].lexId + "' >" + definitions[0].lexeme + "</span>";
-
-      if (lexiconDirection == "local" && showNativeOrthography) {
-   		result = 	result + "<span class='native'> " + definitions[0].nativeOrthography + "</span>";
-      }
-
-		if (definitions[0].irregular) {
-			result = 	result + "* ";
-		} else {
-			result = 	result + " ";
-		}
-
-		if (definitions[0].ipa != "" && lexiconDirection == "local") {
-			result = 	result + "<span class='ipa'>[" + replaceAll(definitions[0].ipa, ":", "&#x2D0;") + "]</span>";
-		}
-
-		if (definitions[0].usage != "") {
-			result = 	result + "<br /><span class='usage'>" + definitions[0].usage + "</span>";
-		}
-		if (definitions[0].example != "") {
-			result = 	result + "<br><span class='label'>Phrases:</span> ";
-			result = 	result + "<span class='usage'>" + definitions[0].example + "</span>";
-		}
-
-		if (definitions[0].etymology !== "" && definitions[0].etymology !== undefined  && showEtymologies) {
-			result = 	result + "<br><span class='label'>Etymology:</span> ";
-			result = 	result + "<span class='etymology'>" + definitions[0].etymology + "</span>";
-		}
-	}
-
-	result = 	result + "</p>";
-	return result;
 }
 
 function abbreviateLexemeClass(lexClass) {

@@ -26,13 +26,10 @@
 		case "getWordlistLocalSorted"			:	getWordlistSorted($mysqli, true);		break;
 		case "getWordlistForeignSorted"		:	getWordlistSorted($mysqli, false);		break;
 
-
-		case "newWordlist"						:	newWordlist($mysqli, true);				break;
-
 		case "saveNewWord"						:	saveNewWord($mysqli);						break;
 	}
 
-	function getWordlistSorted($mysqli, $isToLocal) {
+	function getWordlistSortedOLD($mysqli, $isToLocal) {
 		/*
 		$conlangName = "CONLANG";
 		$conlangPrefix = "Pre";
@@ -339,7 +336,7 @@
 		return array_pop($args);
 	}
 
-	function newWordlist($mysqli, $isToLocal) {
+	function getWordlistSorted($mysqli, $isToLocal) {
 		/*
 		$conlangName = "CONLANG";
 		$conlangPrefix = "Pre";
@@ -417,17 +414,17 @@
 			$match = false;
 
 			if ($isToLocal) {
-				$definitionOutput = $definitions;
-
-				$lexemesArray[0] = $lex;
-			}
-			else
-			{
 				$definitionOutput 	= $lex;
 
 				$lexemesArray = explode(",", $definitions);
 				$lexemesArray = array_map('trim', $lexemesArray); // remove spaces
 				sort($lexemesArray);
+			}
+			else
+			{
+				$definitionOutput = $definitions;
+
+				$lexemesArray[0] = $lex;
 			}
 
 			foreach ($lexemesArray as $definitionId => $lexemeOutput) {

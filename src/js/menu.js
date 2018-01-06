@@ -9,7 +9,6 @@ function initMenu() {
       </div>
 
       <div class='menu-right'>
-         <button onClick='newWordlist()'>NEW WORDLIST</button>
          <button id='new-word-button'>Init new word</button>
          <button onClick='createWordEntry()'>Init word entry</button>
          <button onClick='testWordEntry()'>TEST word entry</button>
@@ -31,6 +30,17 @@ function initMenu() {
    $( "#lexicon-picker-btn" ).on( "click", function() {
       toggleLexiconPicker();
    });
+}
+
+function createLexiconHeadline(conlang, conlangPrefix, conlangSuffix, targetLang) {
+	if (lexiconDirection == 'local') {
+		console.log("headline local");
+		$("#lexicon-headline").html(capitalizeString(targetLang) + " &mdash; <span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + "<span class='langSuffix'>" + conlangSuffix + "</span>");
+	}
+	else {
+		console.log("headline foreign");
+		$("#lexicon-headline").html("<span class='langPrefix'>" + conlangPrefix + "</span>" + capitalizeString(conlang) + "<span class='langSuffix'>" + conlangSuffix + "</span> &mdash; " + capitalizeString(targetLang));
+	}
 }
 
 function populateLexiconPicker() {
