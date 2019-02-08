@@ -314,7 +314,17 @@
 	}
 
 	function saveNewWord($mysqli) {
+		$newWordAsJson = "";
 
+		if (isset($_POST['newWord'])) {
+			$newWordAsJson = $_POST['newWord'];
+		}
+
+		print_r($newWordAsJson);
+
+		//$decoded = json_decode($newWordAsJson, true);
+
+		//echo "from DB: saveNewWord: $newWordAsJson";
 	}
 
 	// Auxiliary functions
@@ -342,6 +352,8 @@
 		$conlangPrefix = "Pre";
 		$conlangSuffix = "Suf";
 		*/
+
+
 
 		$lookup = "";
 		$lookupSql = "";
@@ -400,6 +412,7 @@
 				etymology, irregular, word_usage, note, new, examples
 			FROM
 				$table
+			$lookupSql
 		");
 
 		$stmt->execute();

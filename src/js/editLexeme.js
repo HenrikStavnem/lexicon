@@ -36,7 +36,9 @@ function initNewWord() {
 				<input type='text' id='input_etymology' 			class='input-listen' placeholder="Etymology" /><br />
 
 				<span class='newWord input-headline'>Native Orthography</span>
-				<input type='text' id='input_native_orthography' class='input-listen' placeholder="Etymology" /><br />
+				<input type='text' id='input_native_orthography' class='input-listen' placeholder="Native orthography" /><br />
+
+				<input type='button' value='Save' id='edit-lexeme-save-btn'/>
 			</div>
 
 		</div>
@@ -54,6 +56,7 @@ function initNewWord() {
 	$('.input-listen').bind('input',function() {
 		console.log("input listener");
 		var lookupLocal = $('#input_definition').val();
+
 		if (lookupLocal != "") {
 			getWordlistAsJson("local", lookupLocal, parseInputsToNewWordJson("local"), "preview-local");
 		}
@@ -68,6 +71,10 @@ function initNewWord() {
 		else {
 			$("#new-entry-foreign-preview").html("");
 		}
+	});
+
+	$('#edit-lexeme-save-btn').bind('click',function() {
+		saveNewWord();
 	});
 }
 
@@ -110,4 +117,20 @@ function parseInputsToNewWordJson(direction) {
 	}
 
 	return newWordJson;
+}
+
+function saveNewWord() {
+	var newWordAsJson = parseInputsToNewWordJson("foreign"), // words in the DB is saved as foreign
+		 call = "saveNewWord";
+
+	$.post( connection, {
+		call: call,
+		newWord: newWordAsJson
+	} )
+    .done(
+		function( data ) {
+			console.log(data);
+			// callback function
+		}
+	);
 }

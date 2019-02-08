@@ -27,7 +27,8 @@ function initMenu() {
    $( "#lexicon-picker" ).hide();
    initSearchField();
 
-   $( "#lexicon-picker-btn" ).on( "click", function() {
+   $( "#lexicon-picker-btn" ).on( "click", function(e) {
+      e.stopPropagation();
       toggleLexiconPicker();
    });
 }
